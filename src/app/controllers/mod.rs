@@ -9,3 +9,13 @@ pub fn auth(state: State) -> tide::Server<State> {
 
     api
 }
+
+pub fn category(state: State) -> tide::Server<State> {
+    let mut api = tide::with_state(state);
+
+    api.at("/")
+        .get(services::get_categories)
+        .post(services::create_category);
+
+    api
+}

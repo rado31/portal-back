@@ -12,6 +12,8 @@ pub fn init_app(state: State) -> tide::Server<()> {
 
     app.with(middlewares::cors());
     app.at("/auth").nest(controllers::auth(state.clone()));
+    app.at("/categories")
+        .nest(controllers::category(state.clone()));
 
     app
 }

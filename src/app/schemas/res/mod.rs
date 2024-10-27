@@ -1,7 +1,5 @@
-use serde::Serialize;
+mod auth;
+mod category;
 
-#[derive(sqlx::FromRow, Serialize)]
-pub struct Admin {
-    pub username: String,
-    pub password: String,
-}
+pub use auth::*;
+pub use category::*;
