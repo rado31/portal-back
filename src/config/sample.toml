@@ -1,0 +1,10 @@
+[app]
+url = "host:port"
+release = false
+
+[database]
+url = "postgres://user:password@host:port/dbname"
+
+[auth]
+access_key = "token"
+access_time = "1h"
