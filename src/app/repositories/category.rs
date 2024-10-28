@@ -1,7 +1,8 @@
 use crate::app::{
     queries,
-    schemas::{Category, CreateCategory, Title},
+    schemas::{Category, CreateCategory, Translate},
 };
+use serde_json::from_value;
 use sqlx::Row;
 use sqlx::{query, types::Json, Error, Pool, Postgres, Result};
 use std::sync::Arc;
@@ -15,7 +16,7 @@ pub async fn get_categories(
         .iter()
         .map(|row| {
             let value = row.get("title");
-            let title: Title = serde_json::from_value(value).unwrap();
+            let title: Translate = from_value(value).unwrap();
 
             Category {
                 id: row.get("id"),

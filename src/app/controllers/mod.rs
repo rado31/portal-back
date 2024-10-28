@@ -19,3 +19,14 @@ pub fn category(state: State) -> tide::Server<State> {
 
     api
 }
+
+pub fn films(state: State) -> tide::Server<State> {
+    let mut api = tide::with_state(state);
+
+    api.at("/")
+        .get(services::get_films)
+        .post(services::create_film);
+    api.at("/:id").get(services::get_film);
+
+    api
+}
