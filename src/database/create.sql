@@ -13,3 +13,9 @@ CREATE TABLE sub_categories (
 			REFERENCES categories (id)
 				ON DELETE SET NULL
 );
+
+CREATE TABLE admins (
+	id SERIAL PRIMARY KEY,
+	login VARCHAR NOT NULL,
+	password VARCHAR NOT NULL
+);

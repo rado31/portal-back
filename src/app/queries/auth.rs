@@ -1,5 +1,5 @@
-pub const GET_ME: &str = r#"
-    SELECT username, password
+pub const GET_ADMIN: &str = r#"
+    SELECT login, password
     FROM admins
-    WHERE username = $1
+    WHERE login = $1
 "#;

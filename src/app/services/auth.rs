@@ -1,24 +1,43 @@
-use crate::{app::repositories, config::State};
-use log::error;
-use tide::{Body, Request, Response, Result};
+use crate::{
+    app::{repositories, schemas::Admin},
+    config::State,
+    utils::create_token,
+};
+use serde_json::json;
+use tide::{http::mime::JSON, Request, Response, Result};
 
-pub async fn get_me(req: Request<State>) -> Result<Response> {
+pub async fn sign_in(mut req: Request<State>) -> Result<Response> {
     let pool = req.state().pool.clone();
+    let key = req.state().key.clone();
+    let exp = req.state().exp;
+    let body: Admin = match req.body_json().await {
+        Ok(val) => val,
+        Err(error) => {
+            let response = Response::builder(422)
+                .body(json!({ "message": format!("{error}") }))
+                .content_type(JSON)
+                .build();
 
-    match repositories::get_me(pool).await {
+            return Ok(response);
+        }
+    };
+
+    match repositories::get_admin(pool, body.login).await {
         Ok(admin) => {
-            let mut res = Response::new(200);
-            let body = Body::from_json(&admin).unwrap();
-            res.set_body(body);
-            Ok(res)
+            if !bcrypt::verify(body.password, &admin.password).unwrap() {
+                return Ok(Response::new(403));
+            };
+
+            let response = Response::builder(200)
+                .body(json!({ "token": create_token(exp, &key) }))
+                .content_type(JSON)
+                .build();
+
+            Ok(response)
         }
         Err(error) => {
-            error!("Get Me: {error}");
+            log::error!("Get admin: {error}");
             Ok(Response::new(500))
         }
     }
-}
-
-pub async fn sign_in(_req: Request<State>) -> Result {
-    Ok("".into())
 }

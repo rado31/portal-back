@@ -29,7 +29,7 @@ pub struct Database {
 #[allow(unused)]
 pub struct Auth {
     pub access_key: String,
-    pub access_time: String,
+    pub access_time: u64,
 }
 
 impl Settings {

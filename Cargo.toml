@@ -13,3 +13,5 @@ sqlx = { version = "0.8", features = [ "runtime-async-std", "postgres" ] }
 log = "0.4.22"
 fern = "0.7.0"
 chrono = "0.4.38"
+bcrypt = "0.15.1"
+jsonwebtoken = "9.3.0"

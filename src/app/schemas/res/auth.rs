@@ -1,7 +1,7 @@
-use serde::Serialize;
+use serde::Deserialize;
 
-#[derive(sqlx::FromRow, Serialize)]
+#[derive(sqlx::FromRow, Deserialize)]
 pub struct Admin {
-    pub username: String,
+    pub login: String,
     pub password: String,
 }
