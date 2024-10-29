@@ -13,9 +13,11 @@ pub fn category(state: State) -> tide::Server<State> {
     let mut api = tide::with_state(state);
 
     //api.with(middlewares::JwtMiddleware::new(state.key));
-    api.at("/")
-        .get(services::get_categories)
-        .post(services::create_category);
+    api.at("/").get(services::get_categories);
+    api.at("/:id").get(services::get_category);
+    api.at("/").post(services::create_category);
+    api.at("/sub/:id").get(services::get_sub_categories);
+    api.at("/sub").post(services::create_sub_category);
 
     api
 }

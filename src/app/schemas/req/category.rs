@@ -5,3 +5,9 @@ use serde::{Deserialize, Serialize};
 pub struct CreateCategory {
     pub title: Translate,
 }
+
+#[derive(Deserialize, Serialize)]
+pub struct CreateSubCategory {
+    pub category_id: u32,
+    pub title: Translate,
+}

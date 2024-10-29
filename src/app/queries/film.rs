@@ -48,5 +48,9 @@ pub const GET_FILM: &str = r#"
 "#;
 pub const CREATE_FILM: &str = r#"
     INSERT INTO films (title, description, duration, category_id)
-    VALUES ($1, $2, $3, $4) RETURNING id
+    VALUES ($1, $2, $3, 1) RETURNING id
+"#;
+pub const CREATE_FILMS_SC: &str = r#"
+    INSERT INTO films_sub_categories (film_id, sub_category_id)
+    VALUES ($1, $2)
 "#;

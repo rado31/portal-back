@@ -84,9 +84,18 @@ pub async fn create_film(
         .bind(Json(body.title))
         .bind(Json(body.description))
         .bind(body.duration)
-        .bind(body.category_id)
         .fetch_one(&*pool)
         .await?;
 
-    Ok(row.try_get("id").unwrap())
+    let film_id = row.try_get("id")?;
+
+    for id in body.sub_categories_id {
+        let _ = sqlx::query(queries::CREATE_FILMS_SC)
+            .bind(film_id)
+            .bind(id)
+            .execute(&*pool)
+            .await;
+    }
+
+    Ok(film_id)
 }
