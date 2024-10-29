@@ -45,7 +45,36 @@ pub async fn get_films(
     Ok(films)
 }
 
-pub async fn get_film() {}
+pub async fn get_film(
+    pool: Arc<Pool<Postgres>>,
+    film_id: i32,
+) -> Result<Film, Error> {
+    let row = query(queries::GET_FILM)
+        .bind(film_id)
+        .fetch_one(&*pool)
+        .await?;
+
+    let v_title = row.get("title");
+    let title: Translate = from_value(v_title).unwrap();
+
+    let v_description = row.get("description");
+    let description: Translate = serde_json::from_value(v_description).unwrap();
+
+    let v_sc: Vec<String> = row.get("sub_categories");
+    let sc: Vec<SubCategory> =
+        v_sc.iter().map(|str| from_str(str).unwrap()).collect();
+
+    let film = Film {
+        id: row.get("id"),
+        title,
+        description,
+        duration: row.get("duration"),
+        image: row.get("image"),
+        sub_categories: sc,
+    };
+
+    Ok(film)
+}
 
 pub async fn create_film(
     pool: Arc<Pool<Postgres>>,

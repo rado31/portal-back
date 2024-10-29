@@ -40,8 +40,28 @@ pub async fn get_films(req: Request<State>) -> Result<Response> {
     }
 }
 
-pub async fn get_film(_req: Request<State>) -> Result<Response> {
-    Ok(Response::new(200))
+pub async fn get_film(req: Request<State>) -> Result<Response> {
+    let pool = req.state().pool.clone();
+    let film_id: i32 = match req.param("id").unwrap().parse() {
+        Ok(id) => id,
+        Err(_) => return Ok(Response::new(422)),
+    };
+
+    match repositories::get_film(pool, film_id).await {
+        Ok(films) => {
+            let response = Response::builder(200)
+                .body(json!(films))
+                .content_type(JSON)
+                .build();
+
+            Ok(response)
+        }
+        Err(sqlx::Error::RowNotFound) => Ok(Response::new(404)),
+        Err(error) => {
+            log::error!("Get film: {error}");
+            Ok(Response::new(500))
+        }
+    }
 }
 
 pub async fn create_film(mut req: Request<State>) -> Result<Response> {

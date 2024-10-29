@@ -39,7 +39,7 @@ pub const GET_FILM: &str = r#"
                         FROM sub_categories sc
                         WHERE sc.id = fsc.sub_category_id
                     )
-                )
+                )::VARCHAR
             FROM films_sub_categories fsc
             WHERE fsc.film_id = f.id
         ) AS sub_categories
