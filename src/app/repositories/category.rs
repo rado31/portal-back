@@ -46,6 +46,24 @@ pub async fn get_category(
     Ok(category)
 }
 
+pub async fn get_sub_category(
+    pool: Arc<Pool<Postgres>>,
+    sub_category_id: i32,
+) -> Result<Category, Error> {
+    let row = query(queries::GET_SUB_CATEGORY)
+        .bind(sub_category_id)
+        .fetch_one(&*pool)
+        .await?;
+
+    let id = row.try_get("id")?;
+    let value = row.get("title");
+    let title: Translate = from_value(value).unwrap();
+
+    let category = Category { id, title };
+
+    Ok(category)
+}
+
 pub async fn get_sub_categories(
     pool: Arc<Pool<Postgres>>,
     category_id: i32,

@@ -51,6 +51,30 @@ pub async fn get_category(req: Request<State>) -> Result<Response> {
     }
 }
 
+pub async fn get_sub_category(req: Request<State>) -> Result<Response> {
+    let pool = req.state().pool.clone();
+    let sub_category_id = match req.param("id").unwrap().parse() {
+        Ok(id) => id,
+        Err(_) => return Ok(Response::new(422)),
+    };
+
+    match repositories::get_sub_category(pool, sub_category_id).await {
+        Ok(category) => {
+            let response = Response::builder(200)
+                .body(json!(category))
+                .content_type(JSON)
+                .build();
+
+            Ok(response)
+        }
+        Err(sqlx::Error::RowNotFound) => Ok(Response::new(404)),
+        Err(error) => {
+            log::error!("Get sub category: {error}");
+            Ok(Response::new(500))
+        }
+    }
+}
+
 pub async fn get_sub_categories(req: Request<State>) -> Result<Response> {
     let pool = req.state().pool.clone();
     let category_id = match req.param("id").unwrap().parse() {

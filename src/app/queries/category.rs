@@ -17,6 +17,11 @@ pub const GET_SUB_CATEGORIES: &str = r#"
     WHERE category_id = $1
     ORDER BY id DESC
 "#;
+pub const GET_SUB_CATEGORY: &str = r#"
+    SELECT id, title
+    FROM sub_categories
+    WHERE id = $1
+"#;
 pub const CREATE_SUB_CATEGORY: &str = r#"
     INSERT INTO sub_categories (title, category_id) VALUES ($1, $2) RETURNING id
 "#;
