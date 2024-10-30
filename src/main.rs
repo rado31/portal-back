@@ -11,6 +11,7 @@ async fn main() -> tide::Result<()> {
         &setting.database.url,
         setting.auth.access_key,
         setting.auth.access_time,
+        setting.app.upload_path,
     )
     .await;
 

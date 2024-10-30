@@ -25,5 +25,5 @@ pub struct CreateFilm {
     pub title: Translate,
     pub description: Translate,
     pub duration: i32,
-    pub sub_categories_id: Vec<i32>,
+    pub sub_categories: Vec<i32>,
 }

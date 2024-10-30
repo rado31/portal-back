@@ -28,11 +28,11 @@ pub async fn get_categories(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn get_category(req: Request<State>) -> Result<Response> {
-    let pool = req.state().pool.clone();
     let category_id = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
+    let pool = req.state().pool.clone();
 
     match repositories::get_category(pool, category_id).await {
         Ok(category) => {
@@ -52,11 +52,11 @@ pub async fn get_category(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn get_sub_category(req: Request<State>) -> Result<Response> {
-    let pool = req.state().pool.clone();
     let sub_category_id = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
+    let pool = req.state().pool.clone();
 
     match repositories::get_sub_category(pool, sub_category_id).await {
         Ok(category) => {
@@ -76,11 +76,11 @@ pub async fn get_sub_category(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn get_sub_categories(req: Request<State>) -> Result<Response> {
-    let pool = req.state().pool.clone();
     let category_id = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
+    let pool = req.state().pool.clone();
 
     // check that category exists
     match repositories::get_category(pool.clone(), category_id as i32).await {
@@ -109,7 +109,6 @@ pub async fn get_sub_categories(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn create_category(mut req: Request<State>) -> Result<Response> {
-    let pool = req.state().pool.clone();
     let body: CreateCategory = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
@@ -121,6 +120,7 @@ pub async fn create_category(mut req: Request<State>) -> Result<Response> {
             return Ok(response);
         }
     };
+    let pool = req.state().pool.clone();
 
     match repositories::create_category(pool, body).await {
         Ok(id) => {
@@ -140,7 +140,6 @@ pub async fn create_category(mut req: Request<State>) -> Result<Response> {
 }
 
 pub async fn create_sub_category(mut req: Request<State>) -> Result<Response> {
-    let pool = req.state().pool.clone();
     let body: CreateSubCategory = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
@@ -152,6 +151,7 @@ pub async fn create_sub_category(mut req: Request<State>) -> Result<Response> {
             return Ok(response);
         }
     };
+    let pool = req.state().pool.clone();
 
     // check that category exists
     match repositories::get_category(pool.clone(), body.category_id as i32)

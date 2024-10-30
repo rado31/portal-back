@@ -54,3 +54,6 @@ pub const CREATE_FILMS_SC: &str = r#"
     INSERT INTO films_sub_categories (film_id, sub_category_id)
     VALUES ($1, $2)
 "#;
+pub const UPDATE_FILM_IMAGE: &str = r#"
+    UPDATE films SET image = $1 WHERE id = $2
+"#;

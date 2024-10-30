@@ -7,9 +7,6 @@ use serde_json::json;
 use tide::{http::mime::JSON, Request, Response, Result};
 
 pub async fn sign_in(mut req: Request<State>) -> Result<Response> {
-    let pool = req.state().pool.clone();
-    let key = req.state().key.clone();
-    let exp = req.state().exp;
     let body: Admin = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
@@ -21,6 +18,9 @@ pub async fn sign_in(mut req: Request<State>) -> Result<Response> {
             return Ok(response);
         }
     };
+    let pool = req.state().pool.clone();
+    let key = req.state().key.clone();
+    let exp = req.state().exp;
 
     match repositories::get_admin(pool, body.login).await {
         Ok(admin) => {

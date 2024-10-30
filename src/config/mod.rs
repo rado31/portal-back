@@ -16,6 +16,7 @@ pub struct Settings {
 #[allow(unused)]
 pub struct App {
     pub url: String,
+    pub upload_path: String,
     pub release: bool,
 }
 

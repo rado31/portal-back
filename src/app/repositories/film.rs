@@ -80,7 +80,7 @@ pub async fn create_film(
     pool: Arc<Pool<Postgres>>,
     body: CreateFilm,
 ) -> Result<i32, Error> {
-    let row = sqlx::query(queries::CREATE_FILM)
+    let row = query(queries::CREATE_FILM)
         .bind(Json(body.title))
         .bind(Json(body.description))
         .bind(body.duration)
@@ -89,7 +89,7 @@ pub async fn create_film(
 
     let film_id = row.try_get("id")?;
 
-    for id in body.sub_categories_id {
+    for id in body.sub_categories {
         let _ = sqlx::query(queries::CREATE_FILMS_SC)
             .bind(film_id)
             .bind(id)
@@ -98,4 +98,18 @@ pub async fn create_film(
     }
 
     Ok(film_id)
+}
+
+pub async fn update_film_image(
+    pool: Arc<Pool<Postgres>>,
+    path: &str,
+    film_id: i32,
+) -> Result<(), Error> {
+    let _ = query(queries::UPDATE_FILM_IMAGE)
+        .bind(path)
+        .bind(film_id)
+        .execute(&*pool)
+        .await?;
+
+    Ok(())
 }

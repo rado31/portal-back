@@ -1,3 +1,4 @@
+use async_std::{fs, process::Command};
 use chrono::{Duration, Local, Utc};
 use fern::Dispatch;
 use jsonwebtoken::{
@@ -58,4 +59,22 @@ pub fn verify_token(token: &str, secret_key: &str) -> bool {
         Ok(_) => true,
         Err(_) => false,
     }
+}
+
+pub async fn create_folder(path: &str) -> Result<(), std::io::Error> {
+    match fs::create_dir(path).await {
+        Ok(_) => Ok(()),
+        Err(error) => {
+            log::error!("Create folder: {error}");
+            Err(error)
+        }
+    }
+}
+
+pub async fn fraction_video(video_path: &str, output_path: &str) {
+    Command::new("ffmpeg")
+        .args(["-i", video_path, "-map", "0", "-f", "dash", output_path])
+        .output()
+        .await
+        .unwrap();
 }
