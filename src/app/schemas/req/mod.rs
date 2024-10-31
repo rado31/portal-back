@@ -1,5 +1,5 @@
 mod category;
-mod film;
+mod movie;
 
 pub use category::*;
-pub use film::*;
+pub use movie::*;

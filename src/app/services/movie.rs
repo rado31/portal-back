@@ -1,9 +1,10 @@
 use crate::{
     app::{
         repositories,
-        schemas::{CreateFilm, FilmQuery},
+        schemas::{CreateMovie, MovieQuery},
     },
     config::State,
+    utils::save_file,
 };
 use async_std::{
     fs::{self, OpenOptions},
@@ -12,8 +13,8 @@ use async_std::{
 use serde_json::json;
 use tide::{http::mime::JSON, log, Request, Response, Result};
 
-pub async fn get_films(req: Request<State>) -> Result<Response> {
-    let mut query: FilmQuery = match req.query() {
+pub async fn get_movies(req: Request<State>) -> Result<Response> {
+    let mut query: MovieQuery = match req.query() {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)
@@ -29,7 +30,7 @@ pub async fn get_films(req: Request<State>) -> Result<Response> {
 
     query.page_to_offset();
 
-    match repositories::get_films(
+    match repositories::get_movies(
         pool,
         true, // TO-DO for release set to variable above "is_admin"
         query.page as i32,
@@ -37,32 +38,32 @@ pub async fn get_films(req: Request<State>) -> Result<Response> {
     )
     .await
     {
-        Ok(films) => {
+        Ok(movies) => {
             let response = Response::builder(200)
-                .body(json!(films))
+                .body(json!(movies))
                 .content_type(JSON)
                 .build();
 
             Ok(response)
         }
         Err(error) => {
-            log::error!("Get films: {error}");
+            log::error!("Get movies: {error}");
             Ok(Response::new(500))
         }
     }
 }
 
-pub async fn get_film(req: Request<State>) -> Result<Response> {
-    let film_id: u32 = match req.param("id").unwrap().parse() {
+pub async fn get_movie(req: Request<State>) -> Result<Response> {
+    let movie_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
     let pool = req.state().pool.clone();
 
-    match repositories::get_film(pool, film_id as i32).await {
-        Ok(films) => {
+    match repositories::get_movie(pool, movie_id as i32).await {
+        Ok(movies) => {
             let response = Response::builder(200)
-                .body(json!(films))
+                .body(json!(movies))
                 .content_type(JSON)
                 .build();
 
@@ -70,14 +71,14 @@ pub async fn get_film(req: Request<State>) -> Result<Response> {
         }
         Err(sqlx::Error::RowNotFound) => Ok(Response::new(404)),
         Err(error) => {
-            log::error!("Get film: {error}");
+            log::error!("Get movie: {error}");
             Ok(Response::new(500))
         }
     }
 }
 
-pub async fn create_film(mut req: Request<State>) -> Result<Response> {
-    let body: CreateFilm = match req.body_json().await {
+pub async fn create_movie(mut req: Request<State>) -> Result<Response> {
+    let body: CreateMovie = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)
@@ -91,7 +92,7 @@ pub async fn create_film(mut req: Request<State>) -> Result<Response> {
     let pool = req.state().pool.clone();
     let transaction = pool.begin().await.unwrap();
 
-    match repositories::create_film(pool, body).await {
+    match repositories::create_movie(pool, body).await {
         Ok(id) => {
             transaction.commit().await.unwrap();
             let response = Response::builder(200)
@@ -103,37 +104,37 @@ pub async fn create_film(mut req: Request<State>) -> Result<Response> {
         }
         Err(error) => {
             transaction.rollback().await.unwrap();
-            log::error!("Create film: {error}");
+            log::error!("Create movie: {error}");
             Ok(Response::new(500))
         }
     }
 }
 
 pub async fn upload_image(req: Request<State>) -> Result<Response> {
-    let film_id: u32 = match req.param("id").unwrap().parse() {
+    let movie_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
     let pool = req.state().pool.clone();
 
-    match repositories::get_film(pool.clone(), film_id as i32).await {
+    match repositories::get_movie(pool.clone(), movie_id as i32).await {
         Ok(_) => (),
         Err(sqlx::Error::RowNotFound) => return Ok(Response::new(404)),
         Err(error) => {
-            log::error!("Check film exists for image upload: {error}");
+            log::error!("Check movie exists for image upload: {error}");
             return Ok(Response::new(500));
         }
     };
 
     let upload_path = req.state().upload_path.clone();
-    let path = format!("/uploads/images/films/{film_id}.jpg");
+    let path = format!("/uploads/images/movies/{movie_id}.jpg");
     let transaction = pool.begin().await.unwrap();
 
-    match repositories::update_film_image(pool, &path, film_id as i32).await {
+    match repositories::update_movie_image(pool, &path, movie_id as i32).await {
         Ok(_) => (),
         Err(error) => {
             transaction.rollback().await.unwrap();
-            log::error!("Update film image: {error}");
+            log::error!("Update movie image: {error}");
             return Ok(Response::new(500));
         }
     };
@@ -141,7 +142,7 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
     let file = OpenOptions::new()
         .create(true)
         .write(true)
-        .open(format!("{upload_path}/images/films/{film_id}.jpg"))
+        .open(format!("{upload_path}/images/movies/{movie_id}.jpg"))
         .await
         .unwrap();
 
@@ -152,41 +153,48 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
         }
         Err(error) => {
             transaction.rollback().await.unwrap();
-            log::error!("Save image for film: {error}");
+            log::error!("Save image for movie: {error}");
             Ok(Response::new(500))
         }
     }
 }
 
-pub async fn upload_film(req: Request<State>) -> Result<Response> {
-    let film_id: u32 = match req.param("id").unwrap().parse() {
+pub async fn upload_movie(req: Request<State>) -> Result<Response> {
+    let movie_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
     let pool = req.state().pool.clone();
 
-    match repositories::get_film(pool.clone(), film_id as i32).await {
+    match repositories::get_movie(pool.clone(), movie_id as i32).await {
         Ok(_) => (),
         Err(sqlx::Error::RowNotFound) => return Ok(Response::new(404)),
         Err(error) => {
-            log::error!("Check film exists for film upload: {error}");
+            log::error!("Check movie exists for movie upload: {error}");
             return Ok(Response::new(500));
         }
     };
 
     let upload_path = req.state().upload_path.clone();
-    match fs::create_dir(format!("{upload_path}/films/{film_id}")).await {
+    let movie_path = format!("{upload_path}/movies/{movie_id}");
+    match fs::create_dir(&movie_path).await {
         Ok(_) => (),
         Err(error) => {
-            log::error!("Folder creation for film: {error}");
+            log::error!("Folder creation for movie: {error}");
             return Ok(Response::new(500));
         }
     };
 
-    Ok(Response::new(200))
+    match save_file(format!("{movie_path}/movie.mp4"), req).await {
+        Ok(_) => Ok(Response::new(200)),
+        Err(error) => {
+            log::error!("Save movie: {error}");
+            Ok(Response::new(500))
+        }
+    }
 }
 
-pub async fn serve_film(req: Request<State>) -> Result<Response> {
+pub async fn serve_movie(req: Request<State>) -> Result<Response> {
     let video_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => {

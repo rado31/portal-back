@@ -28,16 +28,16 @@ pub fn category(state: State) -> tide::Server<State> {
     api
 }
 
-pub fn films(state: State) -> tide::Server<State> {
+pub fn movie(state: State) -> tide::Server<State> {
     let mut api = tide::with_state(state);
 
     api.at("/")
-        .get(services::get_films)
-        .post(services::create_film);
+        .get(services::get_movie)
+        .post(services::create_movie);
     api.at("/:id")
-        .get(services::get_film)
-        .post(services::upload_film);
-    api.at("/video/:id").get(services::serve_film);
+        .get(services::get_movie)
+        .post(services::upload_movie);
+    api.at("/video/:id").get(services::serve_movie);
     api.at("/image/:id").post(services::upload_image);
 
     api

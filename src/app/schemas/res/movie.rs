@@ -2,7 +2,7 @@ use crate::app::schemas::translate::Translate;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
-pub struct Film {
+pub struct Movie {
     pub id: i32,
     pub title: Translate,
     pub description: Translate,

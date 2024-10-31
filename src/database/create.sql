@@ -20,7 +20,7 @@ CREATE TABLE admins (
 	password VARCHAR NOT NULL
 );
 
-CREATE TABLE films (
+CREATE TABLE movies (
 	id SERIAL PRIMARY KEY,
 	title JSONB NOT NULL,
 	description JSONB NOT NULL,
@@ -35,13 +35,13 @@ CREATE TABLE films (
 				ON DELETE SET NULL
 );
 
-CREATE TABLE films_sub_categories (
-	film_id INTEGER NOT NULL,
+CREATE TABLE movies_sub_categories (
+	movie_id INTEGER NOT NULL,
 	sub_category_id INTEGER NULL,
 
-	CONSTRAINT film_id
-		FOREIGN KEY (film_id)
-			REFERENCES films (id)
+	CONSTRAINT movie_id
+		FOREIGN KEY (movie_id)
+			REFERENCES movies (id)
 				ON DELETE CASCADE,
 
 	CONSTRAINT sub_category_id

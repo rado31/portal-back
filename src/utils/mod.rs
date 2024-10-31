@@ -1,4 +1,5 @@
-use async_std::{fs, process::Command};
+use crate::config::State;
+use async_std::{fs::OpenOptions, io, process::Command};
 use chrono::{Duration, Local, Utc};
 use fern::Dispatch;
 use jsonwebtoken::{
@@ -6,6 +7,7 @@ use jsonwebtoken::{
     EncodingKey, Header, TokenData, Validation,
 };
 use serde::{Deserialize, Serialize};
+use tide::Request;
 
 #[derive(Serialize, Deserialize)]
 pub struct Claims {
@@ -64,20 +66,21 @@ pub fn verify_token(
     )
 }
 
-pub async fn create_folder(path: &str) -> Result<(), std::io::Error> {
-    match fs::create_dir(path).await {
-        Ok(_) => Ok(()),
-        Err(error) => {
-            log::error!("Create folder: {error}");
-            Err(error)
-        }
-    }
-}
-
 pub async fn fraction_video(video_path: &str, output_path: &str) {
     Command::new("ffmpeg")
         .args(["-i", video_path, "-map", "0", "-f", "dash", output_path])
         .output()
         .await
         .unwrap();
+}
+
+pub async fn save_file(path: String, req: Request<State>) -> io::Result<u64> {
+    let file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .open(path)
+        .await
+        .unwrap();
+
+    Ok(io::copy(req, file).await?)
 }
