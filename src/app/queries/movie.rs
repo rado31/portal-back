@@ -70,7 +70,7 @@ pub const GET_MOVIE: &str = r#"
                     )
                 )::VARCHAR
             FROM movies_sub_categories msc
-            WHERE msc.movie_id = f.id
+            WHERE msc.movie_id = m.id
         ) AS sub_categories
     FROM movies m
     WHERE m.id = $1
