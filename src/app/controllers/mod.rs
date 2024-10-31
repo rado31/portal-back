@@ -32,7 +32,7 @@ pub fn movie(state: State) -> tide::Server<State> {
     let mut api = tide::with_state(state);
 
     api.at("/")
-        .get(services::get_movie)
+        .get(services::get_movies)
         .post(services::create_movie);
     api.at("/:id")
         .get(services::get_movie)

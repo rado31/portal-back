@@ -1,5 +1,5 @@
-use crate::app::schemas::{Createmovie, SubCategory, Translate};
-use crate::app::{queries, schemas::movie};
+use crate::app::schemas::{CreateMovie, SubCategory, Translate};
+use crate::app::{queries, schemas::Movie};
 use serde_json::{from_str, from_value};
 use sqlx::postgres::PgRow;
 use sqlx::types::Json;
@@ -12,7 +12,7 @@ pub async fn get_movies(
     status: bool,
     offset: i32,
     limit: i32,
-) -> Result<Vec<movie>, Error> {
+) -> Result<Vec<Movie>, Error> {
     #[allow(unused)]
     let mut rows: Vec<PgRow> = vec![];
 
@@ -44,7 +44,7 @@ pub async fn get_movies(
             let sc: Vec<SubCategory> =
                 v_sc.iter().map(|str| from_str(str).unwrap()).collect();
 
-            movie {
+            Movie {
                 id: row.get("id"),
                 title,
                 description,
@@ -62,7 +62,7 @@ pub async fn get_movies(
 pub async fn get_movie(
     pool: Arc<Pool<Postgres>>,
     movie_id: i32,
-) -> Result<movie, Error> {
+) -> Result<Movie, Error> {
     let row = query(queries::GET_MOVIE)
         .bind(movie_id)
         .fetch_one(&*pool)
@@ -78,7 +78,7 @@ pub async fn get_movie(
     let sc: Vec<SubCategory> =
         v_sc.iter().map(|str| from_str(str).unwrap()).collect();
 
-    let movie = movie {
+    let movie = Movie {
         id: row.get("id"),
         title,
         description,
@@ -93,7 +93,7 @@ pub async fn get_movie(
 
 pub async fn create_movie(
     pool: Arc<Pool<Postgres>>,
-    body: Createmovie,
+    body: CreateMovie,
 ) -> Result<i32, Error> {
     let row = query(queries::CREATE_MOVIE)
         .bind(Json(body.title))
