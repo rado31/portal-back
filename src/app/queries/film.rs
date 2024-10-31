@@ -1,10 +1,11 @@
-pub const GET_FILMS: &str = r#"
+pub const GET_FILMS_FOR_ADMIN: &str = r#"
     SELECT
         f.id,
         f.title,
         f.description,
         f.duration,
         f.image,
+        f.status,
         ARRAY(
             SELECT
                 JSON_BUILD_OBJECT(
@@ -23,6 +24,33 @@ pub const GET_FILMS: &str = r#"
     OFFSET $1
     LIMIT $2
 "#;
+pub const GET_FILMS: &str = r#"
+    SELECT
+        f.id,
+        f.title,
+        f.description,
+        f.duration,
+        f.image,
+        f.status,
+        ARRAY(
+            SELECT
+                JSON_BUILD_OBJECT(
+                    'id', fsc.sub_category_id,
+                    'title', (
+                        SELECT sc.title
+                        FROM sub_categories sc
+                        WHERE sc.id = fsc.sub_category_id
+                    )
+                )::VARCHAR
+            FROM films_sub_categories fsc
+            WHERE fsc.film_id = f.id
+        ) AS sub_categories
+    FROM films f
+    WHERE f.status = true
+    ORDER BY f.id desc
+    OFFSET $1
+    LIMIT $2
+"#;
 pub const GET_FILM: &str = r#"
     SELECT
         f.id,
@@ -30,6 +58,7 @@ pub const GET_FILM: &str = r#"
         f.description,
         f.duration,
         f.image,
+        f.status,
         ARRAY(
             SELECT
                 JSON_BUILD_OBJECT(

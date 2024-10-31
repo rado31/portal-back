@@ -26,6 +26,7 @@ CREATE TABLE films (
 	description JSONB NOT NULL,
 	duration INTEGER NOT NULL,
 	image VARCHAR NULL,
+	status BOOLEAN DEFAULT true,
 	category_id INTEGER NULL,
 
 	CONSTRAINT category_id

@@ -8,6 +8,7 @@ pub struct Film {
     pub description: Translate,
     pub duration: i32,
     pub image: Option<String>,
+    pub status: bool,
     pub sub_categories: Vec<SubCategory>,
 }
 

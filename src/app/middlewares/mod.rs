@@ -27,16 +27,20 @@ impl JwtMiddleware {
 impl<State: Clone + Send + Sync + 'static> Middleware<State> for JwtMiddleware {
     async fn handle(
         &self,
-        req: Request<State>,
+        mut req: Request<State>,
         next: Next<'_, State>,
     ) -> tide::Result {
         let auth_header = req.header("Authorization").map(|h| h.as_str());
 
         if let Some(auth_header) = auth_header {
             if let Some(token) = auth_header.strip_prefix("Bearer ") {
-                if verify_token(token, &self.secret) {
-                    return Ok(next.run(req).await);
-                }
+                match verify_token(token, &self.secret) {
+                    Ok(decoded_value) => {
+                        req.set_ext(decoded_value.claims.is_admin);
+                        return Ok(next.run(req).await);
+                    }
+                    Err(_) => (),
+                };
             }
         }
 

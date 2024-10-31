@@ -2,13 +2,15 @@ use async_std::{fs, process::Command};
 use chrono::{Duration, Local, Utc};
 use fern::Dispatch;
 use jsonwebtoken::{
-    decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation,
+    decode, encode, errors::Result as JwtResult, Algorithm, DecodingKey,
+    EncodingKey, Header, TokenData, Validation,
 };
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-struct Claims {
-    exp: u64,
+pub struct Claims {
+    pub is_admin: bool,
+    pub exp: u64,
 }
 
 pub fn init_logger(release: bool) {
@@ -34,12 +36,13 @@ pub fn init_logger(release: bool) {
     dispatch.apply().unwrap();
 }
 
-pub fn create_token(exp: u64, secret_key: &str) -> String {
+pub fn create_token(is_admin: bool, exp: u64, secret_key: &str) -> String {
     let exp_time = Utc::now() + Duration::seconds(exp as i64);
 
     encode(
         &Header::default(),
         &Claims {
+            is_admin,
             exp: exp_time.timestamp() as u64,
         },
         &EncodingKey::from_secret(secret_key.as_ref()),
@@ -47,18 +50,18 @@ pub fn create_token(exp: u64, secret_key: &str) -> String {
     .unwrap()
 }
 
-pub fn verify_token(token: &str, secret_key: &str) -> bool {
+pub fn verify_token(
+    token: &str,
+    secret_key: &str,
+) -> JwtResult<TokenData<Claims>> {
     let mut validation = Validation::new(Algorithm::HS256);
     validation.leeway = 0; // additional seconds
 
-    match decode::<Claims>(
+    decode::<Claims>(
         token,
         &DecodingKey::from_secret(secret_key.as_ref()),
         &validation,
-    ) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    )
 }
 
 pub async fn create_folder(path: &str) -> Result<(), std::io::Error> {

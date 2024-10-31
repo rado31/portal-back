@@ -4,8 +4,8 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 #[serde(default)]
 pub struct FilmQuery {
-    pub page: i32,
-    pub count: i32,
+    pub page: u32,
+    pub count: u32,
 }
 
 impl FilmQuery {
@@ -24,6 +24,16 @@ impl Default for FilmQuery {
 pub struct CreateFilm {
     pub title: Translate,
     pub description: Translate,
-    pub duration: i32,
-    pub sub_categories: Vec<i32>,
+    pub duration: u32,
+    pub sub_categories: Vec<u32>,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateFilm {
+    pub id: u32,
+    pub title: Translate,
+    pub description: Translate,
+    pub duration: u32,
+    pub status: bool,
+    pub sub_categories: Vec<u32>,
 }

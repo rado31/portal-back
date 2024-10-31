@@ -1,6 +1,7 @@
 use crate::app::schemas::{CreateFilm, SubCategory, Translate};
 use crate::app::{queries, schemas::Film};
 use serde_json::{from_str, from_value};
+use sqlx::postgres::PgRow;
 use sqlx::types::Json;
 use sqlx::Row;
 use sqlx::{query, Error, Pool, Postgres};
@@ -8,14 +9,26 @@ use std::sync::Arc;
 
 pub async fn get_films(
     pool: Arc<Pool<Postgres>>,
+    status: bool,
     offset: i32,
     limit: i32,
 ) -> Result<Vec<Film>, Error> {
-    let rows = query(queries::GET_FILMS)
-        .bind(offset)
-        .bind(limit)
-        .fetch_all(&*pool)
-        .await?;
+    #[allow(unused)]
+    let mut rows: Vec<PgRow> = vec![];
+
+    if status {
+        rows = query(queries::GET_FILMS_FOR_ADMIN)
+            .bind(offset)
+            .bind(limit)
+            .fetch_all(&*pool)
+            .await?;
+    } else {
+        rows = query(queries::GET_FILMS)
+            .bind(offset)
+            .bind(limit)
+            .fetch_all(&*pool)
+            .await?;
+    }
 
     let films = rows
         .iter()
@@ -37,6 +50,7 @@ pub async fn get_films(
                 description,
                 duration: row.get("duration"),
                 image: row.get("image"),
+                status: row.get("status"),
                 sub_categories: sc,
             }
         })
@@ -70,6 +84,7 @@ pub async fn get_film(
         description,
         duration: row.get("duration"),
         image: row.get("image"),
+        status: row.get("status"),
         sub_categories: sc,
     };
 
@@ -83,18 +98,18 @@ pub async fn create_film(
     let row = query(queries::CREATE_FILM)
         .bind(Json(body.title))
         .bind(Json(body.description))
-        .bind(body.duration)
+        .bind(body.duration as i32)
         .fetch_one(&*pool)
         .await?;
 
     let film_id = row.try_get("id")?;
 
     for id in body.sub_categories {
-        let _ = sqlx::query(queries::CREATE_FILMS_SC)
+        query(queries::CREATE_FILMS_SC)
             .bind(film_id)
-            .bind(id)
+            .bind(id as i32)
             .execute(&*pool)
-            .await;
+            .await?;
     }
 
     Ok(film_id)

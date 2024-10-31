@@ -6,7 +6,7 @@ use crate::{
     config::State,
 };
 use async_std::{
-    fs::OpenOptions,
+    fs::{self, OpenOptions},
     io::{self},
 };
 use serde_json::json;
@@ -25,10 +25,18 @@ pub async fn get_films(req: Request<State>) -> Result<Response> {
         }
     };
     let pool = req.state().pool.clone();
+    //let _is_admin: bool = *req.ext().unwrap();
 
     query.page_to_offset();
 
-    match repositories::get_films(pool, query.page, query.count).await {
+    match repositories::get_films(
+        pool,
+        true, // TO-DO for release set to variable above "is_admin"
+        query.page as i32,
+        query.count as i32,
+    )
+    .await
+    {
         Ok(films) => {
             let response = Response::builder(200)
                 .body(json!(films))
@@ -81,9 +89,11 @@ pub async fn create_film(mut req: Request<State>) -> Result<Response> {
         }
     };
     let pool = req.state().pool.clone();
+    let transaction = pool.begin().await.unwrap();
 
     match repositories::create_film(pool, body).await {
         Ok(id) => {
+            transaction.commit().await.unwrap();
             let response = Response::builder(200)
                 .body(json!({ "id": id }))
                 .content_type(JSON)
@@ -92,6 +102,7 @@ pub async fn create_film(mut req: Request<State>) -> Result<Response> {
             Ok(response)
         }
         Err(error) => {
+            transaction.rollback().await.unwrap();
             log::error!("Create film: {error}");
             Ok(Response::new(500))
         }
@@ -121,8 +132,8 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
     match repositories::update_film_image(pool, &path, film_id as i32).await {
         Ok(_) => (),
         Err(error) => {
-            log::error!("Update film image: {error}");
             transaction.rollback().await.unwrap();
+            log::error!("Update film image: {error}");
             return Ok(Response::new(500));
         }
     };
@@ -148,9 +159,28 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn upload_film(req: Request<State>) -> Result<Response> {
-    let _film_id: u32 = match req.param("id").unwrap().parse() {
+    let film_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
+    };
+    let pool = req.state().pool.clone();
+
+    match repositories::get_film(pool.clone(), film_id as i32).await {
+        Ok(_) => (),
+        Err(sqlx::Error::RowNotFound) => return Ok(Response::new(404)),
+        Err(error) => {
+            log::error!("Check film exists for film upload: {error}");
+            return Ok(Response::new(500));
+        }
+    };
+
+    let upload_path = req.state().upload_path.clone();
+    match fs::create_dir(format!("{upload_path}/films/{film_id}")).await {
+        Ok(_) => (),
+        Err(error) => {
+            log::error!("Folder creation for film: {error}");
+            return Ok(Response::new(500));
+        }
     };
 
     Ok(Response::new(200))
@@ -160,8 +190,10 @@ pub async fn serve_film(req: Request<State>) -> Result<Response> {
     let video_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => {
+            // video id
+            let url_split: Vec<&str> = req.url().path().split('/').collect();
             let segment = req.param("id").unwrap();
-            let segment_path = format!("./video/result/{segment}");
+            let segment_path = format!("./video/{}/{segment}", url_split[2]);
 
             match async_std::fs::read(segment_path).await {
                 Ok(segment_content) => {
@@ -180,7 +212,7 @@ pub async fn serve_film(req: Request<State>) -> Result<Response> {
         }
     };
 
-    let manifest_path = format!("./video/result/{video_id}.mpd");
+    let manifest_path = format!("./video/{video_id}/manifest.mpd");
 
     match async_std::fs::read(manifest_path).await {
         Ok(manifest) => {

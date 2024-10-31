@@ -22,22 +22,27 @@ pub async fn sign_in(mut req: Request<State>) -> Result<Response> {
     let key = req.state().key.clone();
     let exp = req.state().exp;
 
-    match repositories::get_admin(pool, body.login).await {
-        Ok(admin) => {
-            if !bcrypt::verify(body.password, &admin.password).unwrap() {
-                return Ok(Response::new(403));
-            };
+    if body.login == "rado" {
+        match repositories::get_admin(pool, body.login).await {
+            Ok(admin) => {
+                if !bcrypt::verify(body.password, &admin.password).unwrap() {
+                    return Ok(Response::new(403));
+                };
 
-            let response = Response::builder(200)
-                .body(json!({ "token": create_token(exp, &key) }))
-                .content_type(JSON)
-                .build();
+                let response = Response::builder(200)
+                    .body(json!({ "token": create_token(true, exp, &key) }))
+                    .content_type(JSON)
+                    .build();
 
-            Ok(response)
-        }
-        Err(error) => {
-            log::error!("Get admin: {error}");
-            Ok(Response::new(500))
+                return Ok(response);
+            }
+            Err(error) => {
+                log::error!("Get admin: {error}");
+                return Ok(Response::new(500));
+            }
         }
     }
+
+    // TO-DO login for passenger
+    Ok(Response::new(200))
 }
