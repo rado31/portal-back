@@ -18,8 +18,12 @@ pub fn category(state: State) -> tide::Server<State> {
         .post(services::create_category);
     api.at("/:id").get(services::get_category);
     api.at("/:id/sub").get(services::get_sub_categories);
-    api.at("/sub/:id").get(services::get_sub_category);
-    api.at("/sub").post(services::create_sub_category);
+    api.at("/sub/:id")
+        .get(services::get_sub_category)
+        .delete(services::delete_sub_category);
+    api.at("/sub")
+        .post(services::create_sub_category)
+        .put(services::update_sub_category);
 
     api
 }

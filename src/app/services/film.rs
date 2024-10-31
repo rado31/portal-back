@@ -45,13 +45,13 @@ pub async fn get_films(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn get_film(req: Request<State>) -> Result<Response> {
-    let film_id: i32 = match req.param("id").unwrap().parse() {
+    let film_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
     let pool = req.state().pool.clone();
 
-    match repositories::get_film(pool, film_id).await {
+    match repositories::get_film(pool, film_id as i32).await {
         Ok(films) => {
             let response = Response::builder(200)
                 .body(json!(films))
@@ -99,13 +99,13 @@ pub async fn create_film(mut req: Request<State>) -> Result<Response> {
 }
 
 pub async fn upload_image(req: Request<State>) -> Result<Response> {
-    let film_id: i32 = match req.param("id").unwrap().parse() {
+    let film_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
     let pool = req.state().pool.clone();
 
-    match repositories::get_film(pool.clone(), film_id).await {
+    match repositories::get_film(pool.clone(), film_id as i32).await {
         Ok(_) => (),
         Err(sqlx::Error::RowNotFound) => return Ok(Response::new(404)),
         Err(error) => {
@@ -118,7 +118,7 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
     let path = format!("/uploads/images/films/{film_id}.jpg");
     let transaction = pool.begin().await.unwrap();
 
-    match repositories::update_film_image(pool, &path, film_id).await {
+    match repositories::update_film_image(pool, &path, film_id as i32).await {
         Ok(_) => (),
         Err(error) => {
             log::error!("Update film image: {error}");
@@ -148,29 +148,20 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn upload_film(req: Request<State>) -> Result<Response> {
-    let film_id: i32 = match req.param("id").unwrap().parse() {
+    let _film_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
-
-    let file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .open(format!("./uploads/films/{film_id}.jpg"))
-        .await
-        .unwrap();
-
-    io::copy(req, file).await.unwrap();
 
     Ok(Response::new(200))
 }
 
 pub async fn serve_film(req: Request<State>) -> Result<Response> {
-    let video_id: i32 = match req.param("id").unwrap().parse() {
+    let video_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => {
-            let id = req.param("id").unwrap();
-            let segment_path = format!("./video/result/{id}");
+            let segment = req.param("id").unwrap();
+            let segment_path = format!("./video/result/{segment}");
 
             match async_std::fs::read(segment_path).await {
                 Ok(segment_content) => {

@@ -25,3 +25,9 @@ pub const GET_SUB_CATEGORY: &str = r#"
 pub const CREATE_SUB_CATEGORY: &str = r#"
     INSERT INTO sub_categories (title, category_id) VALUES ($1, $2) RETURNING id
 "#;
+pub const UPDATE_SUB_CATEGORY: &str = r#"
+    UPDATE sub_categories SET title = $1, category_id = $2 WHERE id = $3
+"#;
+pub const DELETE_SUB_CATEGORY: &str = r#"
+    DELETE FROM sub_categories WHERE id = $1
+"#;

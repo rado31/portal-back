@@ -1,6 +1,9 @@
 use crate::app::{
     queries,
-    schemas::{Category, CreateCategory, CreateSubCategory, Translate},
+    schemas::{
+        Category, CreateCategory, CreateSubCategory, Translate,
+        UpdateSubCategory,
+    },
 };
 use serde_json::from_value;
 use sqlx::Row;
@@ -110,4 +113,30 @@ pub async fn create_sub_category(
         .await?;
 
     Ok(row.try_get("id")?)
+}
+
+pub async fn update_sub_category(
+    pool: Arc<Pool<Postgres>>,
+    body: UpdateSubCategory,
+) -> Result<(), Error> {
+    sqlx::query(queries::UPDATE_SUB_CATEGORY)
+        .bind(Json(body.title))
+        .bind(body.category_id as i32)
+        .bind(body.id as i32)
+        .execute(&*pool)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn delete_sub_category(
+    pool: Arc<Pool<Postgres>>,
+    sub_category_id: i32,
+) -> Result<u64, Error> {
+    let row = sqlx::query(queries::DELETE_SUB_CATEGORY)
+        .bind(sub_category_id)
+        .execute(&*pool)
+        .await?;
+
+    Ok(row.rows_affected())
 }
