@@ -1,5 +1,5 @@
 use crate::config::State;
-use async_std::{fs::OpenOptions, io, process::Command};
+use async_std::{fs::OpenOptions, io};
 use chrono::{Duration, Local, Utc};
 use fern::Dispatch;
 use jsonwebtoken::{
@@ -7,6 +7,7 @@ use jsonwebtoken::{
     EncodingKey, Header, TokenData, Validation,
 };
 use serde::{Deserialize, Serialize};
+use std::process::{Command, Stdio};
 use tide::Request;
 
 #[derive(Serialize, Deserialize)]
@@ -66,14 +67,6 @@ pub fn verify_token(
     )
 }
 
-pub async fn fraction_video(video_path: &str, output_path: &str) {
-    Command::new("ffmpeg")
-        .args(["-i", video_path, "-map", "0", "-f", "dash", output_path])
-        .output()
-        .await
-        .unwrap();
-}
-
 pub async fn save_file(path: String, req: Request<State>) -> io::Result<u64> {
     let file = OpenOptions::new()
         .create(true)
@@ -83,4 +76,29 @@ pub async fn save_file(path: String, req: Request<State>) -> io::Result<u64> {
         .unwrap();
 
     Ok(io::copy(req, file).await?)
+}
+
+pub fn count_total_frames(path: &str) -> i32 {
+    let res = Command::new("ffprobe")
+        .args([
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-count_packets",
+            "-show_entries",
+            "stream=nb_read_packets",
+            "-of",
+            "csv=p=0",
+            path,
+        ])
+        .stdout(Stdio::piped())
+        .output()
+        .unwrap();
+
+    String::from_utf8(res.stdout)
+        .unwrap()
+        .trim()
+        .parse()
+        .unwrap()
 }

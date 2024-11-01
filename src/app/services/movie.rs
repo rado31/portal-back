@@ -4,13 +4,17 @@ use crate::{
         schemas::{CreateMovie, MovieQuery},
     },
     config::State,
-    utils::save_file,
+    utils::{count_total_frames, save_file},
 };
 use async_std::{
     fs::{self, OpenOptions},
     io::{self},
 };
 use serde_json::json;
+use std::{
+    io::{BufRead, BufReader},
+    process::{Command, Stdio},
+};
 use tide::{http::mime::JSON, log, Request, Response, Result};
 
 pub async fn get_movies(req: Request<State>) -> Result<Response> {
@@ -196,10 +200,10 @@ pub async fn upload_movie(req: Request<State>) -> Result<Response> {
 
 pub async fn serve_movie(req: Request<State>) -> Result<Response> {
     let upload_path = req.state().upload_path.clone();
-    let video_id: u32 = match req.param("id").unwrap().parse() {
+    let movie_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => {
-            // video id
+            // movie id
             let segment = req.param("id").unwrap();
             let splitted_seg: Vec<&str> = segment.split('_').collect();
             let segment_path =
@@ -222,9 +226,9 @@ pub async fn serve_movie(req: Request<State>) -> Result<Response> {
         }
     };
 
-    let manifest_path = format!("{upload_path}/movies/{video_id}/manifest.mpd");
+    let manifest_path = format!("{upload_path}/movies/{movie_id}/manifest.mpd");
 
-    match async_std::fs::read(manifest_path).await {
+    match fs::read(manifest_path).await {
         Ok(manifest) => {
             let res = Response::builder(200)
                 .body(manifest)
@@ -234,5 +238,79 @@ pub async fn serve_movie(req: Request<State>) -> Result<Response> {
             Ok(res)
         }
         Err(_) => Ok(Response::new(404)),
+    }
+}
+
+pub async fn fraction_movie(
+    req: Request<State>,
+    sender: tide::sse::Sender,
+) -> Result<()> {
+    let movie_id: u32 = match req.param("id").unwrap().parse() {
+        Ok(id) => id,
+        Err(error) => return Err(error.into()),
+    };
+    let upload_path = req.state().upload_path.clone();
+    let movie_path = format!("{upload_path}/movies/{movie_id}/movie.mp4");
+    let output_path = format!("{upload_path}/movies/{movie_id}/manifest.mpd");
+    let total_frames = count_total_frames(&movie_path);
+    let mut process = Command::new("ffmpeg")
+        .args([
+            "-y",
+            "-loglevel",
+            "error",
+            "-i",
+            &movie_path,
+            "-map",
+            "0",
+            "-f",
+            "dash",
+            "-init_seg_name",
+            &format!("{movie_id}_init-stream$RepresentationID$.$ext$"),
+            "-media_seg_name",
+            &format!(
+                "{movie_id}_chunk-stream$RepresentationID$-$Number%05d$.$ext$"
+            ),
+            "-progress",
+            "pipe:1",
+            &output_path,
+        ])
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    if let Some(stdout) = process.stdout.take() {
+        let reader = BufReader::new(stdout);
+
+        for line in reader.lines() {
+            match line {
+                Ok(text) => {
+                    if text.starts_with("frame=") {
+                        let splitted: Vec<&str> = text.split('=').collect();
+                        let frame: i32 = splitted[1].parse().unwrap();
+                        let percent: i32 = frame * 100 / total_frames;
+                        match sender
+                            .send("message", percent.to_string(), None)
+                            .await
+                        {
+                            Ok(_) => (),
+                            Err(_) => (),
+                        };
+                    }
+                }
+                Err(error) => {
+                    log::error!("Read line of ffmpeg process: {error}");
+                }
+            }
+        }
+    }
+
+    match fs::remove_file(format!("{upload_path}/movies/{movie_id}/movie.mp4"))
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(error) => {
+            log::error!("Delete movie: {error}");
+            Ok(())
+        }
     }
 }
