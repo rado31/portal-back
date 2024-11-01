@@ -195,13 +195,15 @@ pub async fn upload_movie(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn serve_movie(req: Request<State>) -> Result<Response> {
+    let upload_path = req.state().upload_path.clone();
     let video_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => {
             // video id
-            let url_split: Vec<&str> = req.url().path().split('/').collect();
             let segment = req.param("id").unwrap();
-            let segment_path = format!("./video/{}/{segment}", url_split[2]);
+            let splitted_seg: Vec<&str> = segment.split('_').collect();
+            let segment_path =
+                format!("{upload_path}/movies/{}/{segment}", splitted_seg[0]);
 
             match async_std::fs::read(segment_path).await {
                 Ok(segment_content) => {
@@ -220,7 +222,7 @@ pub async fn serve_movie(req: Request<State>) -> Result<Response> {
         }
     };
 
-    let manifest_path = format!("./video/{video_id}/manifest.mpd");
+    let manifest_path = format!("{upload_path}/movies/{video_id}/manifest.mpd");
 
     match async_std::fs::read(manifest_path).await {
         Ok(manifest) => {
