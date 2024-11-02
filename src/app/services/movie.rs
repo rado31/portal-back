@@ -180,16 +180,19 @@ pub async fn upload_movie(req: Request<State>) -> Result<Response> {
     };
 
     let upload_path = req.state().upload_path.clone();
-    let movie_path = format!("{upload_path}/movies/{movie_id}");
-    match fs::create_dir(&movie_path).await {
-        Ok(_) => (),
-        Err(error) => {
+    let folder = format!("{upload_path}/movies/{movie_id}");
+
+    if let Err(error) = fs::create_dir(&folder).await {
+        if error.kind() != io::ErrorKind::AlreadyExists {
             log::error!("Folder creation for movie: {error}");
             return Ok(Response::new(500));
         }
+
+        fs::remove_dir_all(&folder).await.unwrap();
+        fs::create_dir(&folder).await.unwrap();
     };
 
-    match save_file(format!("{movie_path}/movie.mp4"), req).await {
+    match save_file(format!("{folder}/movie.mp4"), req).await {
         Ok(_) => Ok(Response::new(200)),
         Err(error) => {
             log::error!("Save movie: {error}");
