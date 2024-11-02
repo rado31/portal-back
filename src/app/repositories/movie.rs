@@ -1,4 +1,4 @@
-use crate::app::schemas::{CreateMovie, SubCategory, Translate};
+use crate::app::schemas::{CreateMovie, Movies, SubCategory, Translate};
 use crate::app::{queries, schemas::Movie};
 use serde_json::{from_str, from_value};
 use sqlx::postgres::PgRow;
@@ -89,6 +89,58 @@ pub async fn get_movie(
     };
 
     Ok(movie)
+}
+
+pub async fn get_movies_by_sc(
+    pool: Arc<Pool<Postgres>>,
+    sub_category_id: i32,
+    offset: i32,
+    limit: i32,
+) -> Result<Movies, Error> {
+    let rows = query(queries::GET_MOVIES_BY_SC)
+        .bind(sub_category_id)
+        .bind(offset)
+        .bind(limit)
+        .fetch_all(&*pool)
+        .await?;
+
+    let movies = rows
+        .iter()
+        .map(|row| {
+            let v_title = row.get("title");
+            let title: Translate = from_value(v_title).unwrap();
+
+            let v_description = row.get("description");
+            let description: Translate =
+                serde_json::from_value(v_description).unwrap();
+
+            let v_sc: Vec<String> = row.get("sub_categories");
+            let sc: Vec<SubCategory> =
+                v_sc.iter().map(|str| from_str(str).unwrap()).collect();
+
+            Movie {
+                id: row.get("id"),
+                title,
+                description,
+                duration: row.get("duration"),
+                image: row.get("image"),
+                status: row.get("status"),
+                sub_categories: sc,
+            }
+        })
+        .collect();
+
+    let row = query(queries::GET_MOVIES_BY_SC_TOTAL)
+        .bind(sub_category_id)
+        .fetch_one(&*pool)
+        .await?;
+
+    let res = Movies {
+        total: row.get("total"),
+        movies,
+    };
+
+    Ok(res)
 }
 
 pub async fn create_movie(

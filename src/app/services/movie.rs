@@ -81,6 +81,50 @@ pub async fn get_movie(req: Request<State>) -> Result<Response> {
     }
 }
 
+pub async fn get_movies_by_sc(req: Request<State>) -> Result<Response> {
+    let sub_category_id: u32 = match req.param("id").unwrap().parse() {
+        Ok(id) => id,
+        Err(_) => return Ok(Response::new(422)),
+    };
+    let mut query: MovieQuery = match req.query() {
+        Ok(val) => val,
+        Err(error) => {
+            let response = Response::builder(422)
+                .body(json!({ "message": format!("{error}") }))
+                .content_type(JSON)
+                .build();
+
+            return Ok(response);
+        }
+    };
+    let pool = req.state().pool.clone();
+
+    query.page_to_offset();
+
+    match repositories::get_movies_by_sc(
+        pool,
+        sub_category_id as i32,
+        query.page as i32,
+        query.count as i32,
+    )
+    .await
+    {
+        Ok(movies) => {
+            let response = Response::builder(200)
+                .body(json!(movies))
+                .content_type(JSON)
+                .build();
+
+            Ok(response)
+        }
+        Err(sqlx::Error::RowNotFound) => Ok(Response::new(404)),
+        Err(error) => {
+            log::error!("Get movies by sub category: {error}");
+            Ok(Response::new(500))
+        }
+    }
+}
+
 pub async fn create_movie(mut req: Request<State>) -> Result<Response> {
     let body: CreateMovie = match req.body_json().await {
         Ok(val) => val,
@@ -192,13 +236,12 @@ pub async fn upload_movie(req: Request<State>) -> Result<Response> {
         fs::create_dir(&folder).await.unwrap();
     };
 
-    match save_file(format!("{folder}/movie.mp4"), req).await {
-        Ok(_) => Ok(Response::new(200)),
-        Err(error) => {
-            log::error!("Save movie: {error}");
-            Ok(Response::new(500))
-        }
+    if let Err(error) = save_file(format!("{folder}/movie.mp4"), req).await {
+        log::error!("Save movie: {error}");
+        return Ok(Response::new(500));
     }
+
+    Ok(Response::new(200))
 }
 
 pub async fn serve_movie(req: Request<State>) -> Result<Response> {
@@ -206,8 +249,8 @@ pub async fn serve_movie(req: Request<State>) -> Result<Response> {
     let movie_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => {
-            // movie id
             let segment = req.param("id").unwrap();
+            // first char of segment's name is ID
             let splitted_seg: Vec<&str> = segment.split('_').collect();
             let segment_path =
                 format!("{upload_path}/movies/{}/{segment}", splitted_seg[0]);
@@ -231,17 +274,16 @@ pub async fn serve_movie(req: Request<State>) -> Result<Response> {
 
     let manifest_path = format!("{upload_path}/movies/{movie_id}/manifest.mpd");
 
-    match fs::read(manifest_path).await {
-        Ok(manifest) => {
-            let res = Response::builder(200)
-                .body(manifest)
-                .content_type("application/dash+xml")
-                .build();
+    if let Ok(manifest) = fs::read(manifest_path).await {
+        let res = Response::builder(200)
+            .body(manifest)
+            .content_type("application/dash+xml")
+            .build();
 
-            Ok(res)
-        }
-        Err(_) => Ok(Response::new(404)),
+        return Ok(res);
     }
+
+    Ok(Response::new(404))
 }
 
 pub async fn fraction_movie(
@@ -253,16 +295,15 @@ pub async fn fraction_movie(
         Err(error) => return Err(error.into()),
     };
     let upload_path = req.state().upload_path.clone();
-    let movie_path = format!("{upload_path}/movies/{movie_id}/movie.mp4");
-    let output_path = format!("{upload_path}/movies/{movie_id}/manifest.mpd");
-    let total_frames = count_total_frames(&movie_path);
+    let folder = format!("{upload_path}/movies/{movie_id}");
+    let total_frames = count_total_frames(&format!("{folder}/movie.mp4"));
     let mut process = Command::new("ffmpeg")
         .args([
             "-y",
             "-loglevel",
             "error",
             "-i",
-            &movie_path,
+            &format!("{folder}/movie.mp4"),
             "-map",
             "0",
             "-f",
@@ -275,7 +316,7 @@ pub async fn fraction_movie(
             ),
             "-progress",
             "pipe:1",
-            &output_path,
+            &format!("{folder}/manifest.mpd"),
         ])
         .stdout(Stdio::piped())
         .spawn()
@@ -285,35 +326,24 @@ pub async fn fraction_movie(
         let reader = BufReader::new(stdout);
 
         for line in reader.lines() {
-            match line {
-                Ok(text) => {
-                    if text.starts_with("frame=") {
-                        let splitted: Vec<&str> = text.split('=').collect();
-                        let frame: i32 = splitted[1].parse().unwrap();
-                        let percent: i32 = frame * 100 / total_frames;
-                        match sender
-                            .send("message", percent.to_string(), None)
-                            .await
-                        {
-                            Ok(_) => (),
-                            Err(_) => (),
-                        };
-                    }
-                }
-                Err(error) => {
-                    log::error!("Read line of ffmpeg process: {error}");
-                }
+            let text = line.unwrap();
+
+            if text.starts_with("frame=") {
+                let splitted: Vec<&str> = text.split('=').collect();
+                let frame: i32 = splitted[1].parse().unwrap();
+                let percent: i32 = frame * 100 / total_frames;
+                sender
+                    .send("message", percent.to_string(), None)
+                    .await
+                    .map_or_else(|_| (), |_| ());
             }
         }
     }
 
-    match fs::remove_file(format!("{upload_path}/movies/{movie_id}/movie.mp4"))
-        .await
-    {
-        Ok(_) => Ok(()),
-        Err(error) => {
-            log::error!("Delete movie: {error}");
-            Ok(())
-        }
+    if let Err(error) = fs::remove_file(format!("{folder}/movie.mp4")).await {
+        log::error!("Delete movie: {error}");
+        return Ok(());
     }
+
+    Ok(())
 }
