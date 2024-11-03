@@ -1,4 +1,6 @@
-use crate::app::schemas::{CreateMovie, Movies, SubCategory, Translate};
+use crate::app::schemas::{
+    CreateMovie, MainPageData, MainPageMovie, Movies, SubCategory, Translate,
+};
 use crate::app::{queries, schemas::Movie};
 use serde_json::{from_str, from_value};
 use sqlx::postgres::PgRow;
@@ -141,6 +143,32 @@ pub async fn get_movies_by_sc(
     };
 
     Ok(res)
+}
+
+pub async fn get_main_page_data(
+    pool: Arc<Pool<Postgres>>,
+) -> Result<Vec<MainPageData>, Error> {
+    let rows = query(queries::GET_MAIN_PAGE_DATA).fetch_all(&*pool).await?;
+
+    let result = rows
+        .iter()
+        .map(|row| {
+            let v_title = row.get("title");
+            let title: Translate = from_value(v_title).unwrap();
+
+            let v_movies: Vec<String> = row.get("movies");
+            let movies: Vec<MainPageMovie> =
+                v_movies.iter().map(|str| from_str(str).unwrap()).collect();
+
+            MainPageData {
+                id: row.get("id"),
+                title,
+                movies,
+            }
+        })
+        .collect();
+
+    Ok(result)
 }
 
 pub async fn create_movie(

@@ -125,6 +125,25 @@ pub async fn get_movies_by_sc(req: Request<State>) -> Result<Response> {
     }
 }
 
+pub async fn get_main_page_data(req: Request<State>) -> Result<Response> {
+    let pool = req.state().pool.clone();
+
+    match repositories::get_main_page_data(pool).await {
+        Ok(data) => {
+            let response = Response::builder(200)
+                .body(json!(data))
+                .content_type(JSON)
+                .build();
+
+            Ok(response)
+        }
+        Err(error) => {
+            log::error!("Get main page data: {error}");
+            Ok(Response::new(500))
+        }
+    }
+}
+
 pub async fn create_movie(mut req: Request<State>) -> Result<Response> {
     let body: CreateMovie = match req.body_json().await {
         Ok(val) => val,

@@ -38,6 +38,7 @@ pub fn movie(state: State) -> tide::Server<State> {
         .get(services::get_movie)
         .post(services::upload_movie);
     api.at("/sub/:id").get(services::get_movies_by_sc);
+    api.at("/main-page").get(services::get_main_page_data);
     api.at("/video/:id").get(services::serve_movie);
     api.at("/fraction/:id")
         .get(tide::sse::endpoint(services::fraction_movie));
