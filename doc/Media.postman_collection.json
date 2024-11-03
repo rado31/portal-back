@@ -282,12 +282,22 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/movies",
+							"raw": "{{host}}/movies?page=1&count=10",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"movies"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "count",
+									"value": "10"
+								}
 							]
 						}
 					},
@@ -310,6 +320,61 @@
 							"path": [
 								"movies",
 								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "By Sub Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/movies/sub/12?page=1&count=10",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"movies",
+								"sub",
+								"12"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "count",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Main page",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/movies/main-page",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"movies",
+								"main-page"
 							]
 						}
 					},
@@ -495,7 +560,7 @@
 	],
 	"variable": [
 		{
-			"id": "10460400-9088-46c2-9930-acfab7d24ce2",
+			"id": "a5ddd08b-4226-4fc7-afb8-7271f940624e",
 			"key": "host",
 			"value": "172.31.13.14:8080",
 			"type": "string"
