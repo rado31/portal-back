@@ -360,9 +360,38 @@ pub async fn fraction_movie(
     }
 
     if let Err(error) = fs::remove_file(format!("{folder}/movie.mp4")).await {
-        log::error!("Delete movie: {error}");
+        log::error!("Remove movie: {error}");
         return Ok(());
     }
 
     Ok(())
+}
+
+pub async fn update_movie(_req: Request<State>) -> Result<Response> {
+    Ok(Response::new(200))
+}
+
+pub async fn delete_movie(req: Request<State>) -> Result<Response> {
+    let movie_id: u32 = match req.param("id").unwrap().parse() {
+        Ok(id) => id,
+        Err(_) => return Ok(Response::new(422)),
+    };
+    let pool = req.state().pool.clone();
+
+    match repositories::delete_movie(pool, movie_id as i32).await {
+        Ok(_) => {
+            if let Err(error) =
+                fs::remove_file(format!("{movie_id}/movie.mp4")).await
+            {
+                log::error!("Remove movie: {error}");
+            }
+
+            Ok(Response::new(200))
+        }
+        Err(sqlx::Error::RowNotFound) => Ok(Response::new(404)),
+        Err(error) => {
+            log::error!("Delete movie: {error}");
+            Ok(Response::new(500))
+        }
+    }
 }

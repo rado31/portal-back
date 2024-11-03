@@ -1,5 +1,6 @@
 use crate::app::schemas::{
     CreateMovie, MainPageData, MainPageMovie, Movies, SubCategory, Translate,
+    UpdateMovie,
 };
 use crate::app::{queries, schemas::Movie};
 use serde_json::{from_str, from_value};
@@ -200,11 +201,30 @@ pub async fn update_movie_image(
     path: &str,
     movie_id: i32,
 ) -> Result<(), Error> {
-    let _ = query(queries::UPDATE_MOVIE_IMAGE)
+    query(queries::UPDATE_MOVIE_IMAGE)
         .bind(path)
         .bind(movie_id)
         .execute(&*pool)
         .await?;
 
     Ok(())
+}
+
+pub async fn update_movie(
+    _pool: Arc<Pool<Postgres>>,
+    _body: UpdateMovie,
+) -> Result<(), Error> {
+    Ok(())
+}
+
+pub async fn delete_movie(
+    pool: Arc<Pool<Postgres>>,
+    movie_id: i32,
+) -> Result<i32, Error> {
+    let row = query(queries::DELETE_MOVIE)
+        .bind(movie_id)
+        .fetch_one(&*pool)
+        .await?;
+
+    Ok(row.get("id"))
 }

@@ -432,6 +432,35 @@
 					"response": []
 				},
 				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"id\": 1,\n\t\"title\": {\n\t\t\"tk\": \"shrek\",\n\t\t\"ru\": \"шрек\"\n\t},\n\t\"description\": {\n\t\t\"tk\": \"qwe\",\n\t\t\"ru\": \"asd\"\n\t},\n\t\"duration\": 3600,\n\t\"status\": false,\n\t\"sub_categories\": [1]\n}"
+						},
+						"url": {
+							"raw": "{{host}}/movies/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"movies",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Upload Image",
 					"request": {
 						"method": "POST",
@@ -522,6 +551,28 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/movies/71",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"movies",
+								"71"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
@@ -560,7 +611,7 @@
 	],
 	"variable": [
 		{
-			"id": "a5ddd08b-4226-4fc7-afb8-7271f940624e",
+			"id": "b1276853-b39a-43f2-9a97-98abbccd5200",
 			"key": "host",
 			"value": "172.31.13.14:8080",
 			"type": "string"

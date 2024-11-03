@@ -119,3 +119,10 @@ pub const CREATE_MOVIE_SC: &str = r#"
 pub const UPDATE_MOVIE_IMAGE: &str = r#"
     UPDATE movies SET image = $1 WHERE id = $2
 "#;
+pub const UPDATE_MOVIE: &str = r#"
+    UPDATE movies SET title = $1, description = $2, duration = $3, status = $4
+    WHERE id = $5
+"#;
+pub const DELETE_MOVIE: &str = r#"
+    DELETE FROM movies WHERE id = $1 RETURNING id
+"#;
