@@ -196,20 +196,14 @@ pub async fn update_sub_category(mut req: Request<State>) -> Result<Response> {
     };
     let pool = req.state().pool.clone();
 
-    // check that category exists
-    match repositories::get_category(pool.clone(), body.category_id as i32)
-        .await
-    {
-        Ok(_) => (),
-        Err(sqlx::Error::RowNotFound) => return Ok(Response::new(404)),
-        Err(error) => {
-            log::error!("Get category for sub update: {error}");
-            return Ok(Response::new(500));
-        }
-    };
-
     match repositories::update_sub_category(pool, body).await {
-        Ok(_) => Ok(Response::new(200)),
+        Ok(rows_affected) => {
+            if rows_affected == 0 {
+                return Ok(Response::new(404));
+            }
+
+            Ok(Response::new(200))
+        }
         Err(error) => {
             log::error!("Update sub category: {error}");
             Ok(Response::new(500))

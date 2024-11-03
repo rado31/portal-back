@@ -15,6 +15,5 @@ pub struct CreateSubCategory {
 #[derive(Deserialize, Serialize)]
 pub struct UpdateSubCategory {
     pub id: u32,
-    pub category_id: u32,
     pub title: Translate,
 }
