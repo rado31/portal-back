@@ -13,10 +13,6 @@ pub fn category(state: State) -> tide::Server<State> {
     let mut api = tide::with_state(state);
 
     //api.with(middlewares::JwtMiddleware::new(state.key));
-    api.at("/")
-        .get(services::get_categories)
-        .post(services::create_category);
-    api.at("/:id").get(services::get_category);
     api.at("/:id/sub").get(services::get_sub_categories);
     api.at("/sub/:id")
         .get(services::get_sub_category)
@@ -45,6 +41,7 @@ pub fn movie(state: State) -> tide::Server<State> {
     api.at("/fraction/:id")
         .get(tide::sse::endpoint(services::fraction_movie));
     api.at("/image/:id").post(services::upload_image);
+    api.at("/search/:text").get(services::search_movie);
 
     api
 }

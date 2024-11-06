@@ -62,82 +62,6 @@
 			]
 		},
 		{
-			"name": "Category",
-			"item": [
-				{
-					"name": "All",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{host}}/categories",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"categories"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "By ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{host}}/categories/1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"categories",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": {\n\t\t\"tk\": \"kinolar\",\n\t\t\"ru\": \"фильмы\"\n\t}\n}"
-						},
-						"url": {
-							"raw": "{{host}}/categories",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"categories"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
 			"name": "Sub Category",
 			"item": [
 				{
@@ -335,14 +259,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/movies/sub/12?page=1&count=10",
+							"raw": "{{host}}/movies/sub/1?page=1&count=10",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"movies",
 								"sub",
-								"12"
+								"1"
 							],
 							"query": [
 								{
@@ -398,6 +322,29 @@
 								"movies",
 								"video",
 								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/movies/search/ady",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"movies",
+								"search",
+								"ady"
 							]
 						}
 					},
@@ -611,9 +558,15 @@
 	],
 	"variable": [
 		{
-			"id": "b1276853-b39a-43f2-9a97-98abbccd5200",
+			"id": "f64d9cc7-68fd-420d-bea2-62beface0fb5",
 			"key": "host",
 			"value": "172.31.13.14:8080",
+			"type": "string"
+		},
+		{
+			"id": "75aca11b-afdc-4272-a246-05e415ca4fb8",
+			"key": "public",
+			"value": "213.130.144.154",
 			"type": "string"
 		}
 	]

@@ -172,6 +172,44 @@ pub async fn get_main_page_data(
     Ok(result)
 }
 
+pub async fn search_movie(
+    pool: Arc<Pool<Postgres>>,
+    text: &str,
+) -> Result<Vec<Movie>, Error> {
+    let rows = query(queries::SEARCH_MOVIE)
+        .bind(text)
+        .fetch_all(&*pool)
+        .await?;
+
+    let movies = rows
+        .iter()
+        .map(|row| {
+            let v_title = row.get("title");
+            let title: Translate = from_value(v_title).unwrap();
+
+            let v_description = row.get("description");
+            let description: Translate =
+                serde_json::from_value(v_description).unwrap();
+
+            let v_sc: Vec<String> = row.get("sub_categories");
+            let sc: Vec<SubCategory> =
+                v_sc.iter().map(|str| from_str(str).unwrap()).collect();
+
+            Movie {
+                id: row.get("id"),
+                title,
+                description,
+                duration: row.get("duration"),
+                image: row.get("image"),
+                status: row.get("status"),
+                sub_categories: sc,
+            }
+        })
+        .collect();
+
+    Ok(movies)
+}
+
 pub async fn create_movie(
     pool: Arc<Pool<Postgres>>,
     body: CreateMovie,
@@ -211,20 +249,29 @@ pub async fn update_movie_image(
 }
 
 pub async fn update_movie(
-    _pool: Arc<Pool<Postgres>>,
-    _body: UpdateMovie,
-) -> Result<(), Error> {
-    Ok(())
+    pool: Arc<Pool<Postgres>>,
+    body: UpdateMovie,
+) -> Result<u64, Error> {
+    let row = query(queries::UPDATE_MOVIE)
+        .bind(Json(body.title))
+        .bind(Json(body.description))
+        .bind(body.duration as i32)
+        .bind(body.status)
+        .bind(body.id as i32)
+        .execute(&*pool)
+        .await?;
+
+    Ok(row.rows_affected())
 }
 
 pub async fn delete_movie(
     pool: Arc<Pool<Postgres>>,
     movie_id: i32,
-) -> Result<i32, Error> {
+) -> Result<u64, Error> {
     let row = query(queries::DELETE_MOVIE)
         .bind(movie_id)
-        .fetch_one(&*pool)
+        .execute(&*pool)
         .await?;
 
-    Ok(row.get("id"))
+    Ok(row.rows_affected())
 }

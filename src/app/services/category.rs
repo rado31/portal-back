@@ -1,55 +1,12 @@
 use crate::{
     app::{
         repositories,
-        schemas::{CreateCategory, CreateSubCategory, UpdateSubCategory},
+        schemas::{CreateSubCategory, UpdateSubCategory},
     },
     config::State,
 };
 use serde_json::json;
 use tide::{http::mime::JSON, Request, Response, Result};
-
-pub async fn get_categories(req: Request<State>) -> Result<Response> {
-    let pool = req.state().pool.clone();
-
-    match repositories::get_categories(pool).await {
-        Ok(categories) => {
-            let response = Response::builder(200)
-                .body(json!(categories))
-                .content_type(JSON)
-                .build();
-
-            Ok(response)
-        }
-        Err(error) => {
-            log::error!("Get categories: {error}");
-            Ok(Response::new(500))
-        }
-    }
-}
-
-pub async fn get_category(req: Request<State>) -> Result<Response> {
-    let category_id: u32 = match req.param("id").unwrap().parse() {
-        Ok(id) => id,
-        Err(_) => return Ok(Response::new(422)),
-    };
-    let pool = req.state().pool.clone();
-
-    match repositories::get_category(pool, category_id as i32).await {
-        Ok(category) => {
-            let response = Response::builder(200)
-                .body(json!(category))
-                .content_type(JSON)
-                .build();
-
-            Ok(response)
-        }
-        Err(sqlx::Error::RowNotFound) => Ok(Response::new(404)),
-        Err(error) => {
-            log::error!("Get category: {error}");
-            Ok(Response::new(500))
-        }
-    }
-}
 
 pub async fn get_sub_category(req: Request<State>) -> Result<Response> {
     let sub_category_id: u32 = match req.param("id").unwrap().parse() {
@@ -103,37 +60,6 @@ pub async fn get_sub_categories(req: Request<State>) -> Result<Response> {
         }
         Err(error) => {
             log::error!("Get sub categories: {error}");
-            Ok(Response::new(500))
-        }
-    }
-}
-
-pub async fn create_category(mut req: Request<State>) -> Result<Response> {
-    let body: CreateCategory = match req.body_json().await {
-        Ok(val) => val,
-        Err(error) => {
-            let response = Response::builder(422)
-                .body(json!({ "message": format!("{error}") }))
-                .content_type(JSON)
-                .build();
-
-            return Ok(response);
-        }
-    };
-    let pool = req.state().pool.clone();
-
-    match repositories::create_category(pool, body).await {
-        Ok(id) => {
-            let response = Response::builder(200)
-                .body(json!({ "id": id }))
-                .content_type(JSON)
-                .build();
-
-            Ok(response)
-        }
-        Err(sqlx::Error::RowNotFound) => Ok(Response::new(404)),
-        Err(error) => {
-            log::error!("Create category: {error}");
             Ok(Response::new(500))
         }
     }

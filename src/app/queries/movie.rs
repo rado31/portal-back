@@ -108,6 +108,35 @@ pub const GET_MOVIES_BY_SC: &str = r#"
     OFFSET $2
     LIMIT $3
 "#;
+pub const SEARCH_MOVIE: &str = r#"
+    SELECT
+        m.id,
+        m.title,
+        m.description,
+        m.duration,
+        m.image,
+        m.status,
+        ARRAY(
+            SELECT
+                JSON_BUILD_OBJECT(
+                    'id', msc.sub_category_id,
+                    'title', (
+                        SELECT sc.title
+                        FROM sub_categories sc
+                        WHERE sc.id = msc.sub_category_id
+                    )
+                )::VARCHAR
+            FROM movies_sub_categories msc
+            WHERE msc.movie_id = m.id
+        ) AS sub_categories
+    FROM movies m
+    WHERE EXISTS (
+		SELECT *
+		FROM JSONB_EACH_TEXT(m.title) titles
+		WHERE titles.value ILIKE CONCAT('%', $1::VARCHAR, '%')
+		LIMIT 10
+	)  
+"#;
 pub const CREATE_MOVIE: &str = r#"
     INSERT INTO movies (title, description, duration, category_id)
     VALUES ($1, $2, $3, 1) RETURNING id

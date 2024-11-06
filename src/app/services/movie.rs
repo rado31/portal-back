@@ -1,7 +1,7 @@
 use crate::{
     app::{
         repositories,
-        schemas::{CreateMovie, MovieQuery},
+        schemas::{CreateMovie, MovieQuery, UpdateMovie},
     },
     config::State,
     utils::{count_total_frames, save_file},
@@ -144,6 +144,26 @@ pub async fn get_main_page_data(req: Request<State>) -> Result<Response> {
     }
 }
 
+pub async fn search_movie(req: Request<State>) -> Result<Response> {
+    let text = req.param("text").unwrap();
+    let pool = req.state().pool.clone();
+
+    match repositories::search_movie(pool, text).await {
+        Ok(movies) => {
+            let response = Response::builder(200)
+                .body(json!(movies))
+                .content_type(JSON)
+                .build();
+
+            Ok(response)
+        }
+        Err(error) => {
+            log::error!("Search movie: {error}");
+            Ok(Response::new(500))
+        }
+    }
+}
+
 pub async fn create_movie(mut req: Request<State>) -> Result<Response> {
     let body: CreateMovie = match req.body_json().await {
         Ok(val) => val,
@@ -184,26 +204,16 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
     };
     let pool = req.state().pool.clone();
 
-    match repositories::get_movie(pool.clone(), movie_id as i32).await {
-        Ok(_) => (),
-        Err(sqlx::Error::RowNotFound) => return Ok(Response::new(404)),
-        Err(error) => {
-            log::error!("Check movie exists for image upload: {error}");
-            return Ok(Response::new(500));
-        }
-    };
-
     let upload_path = req.state().upload_path.clone();
     let path = format!("/uploads/images/movies/{movie_id}.jpg");
     let transaction = pool.begin().await.unwrap();
 
-    match repositories::update_movie_image(pool, &path, movie_id as i32).await {
-        Ok(_) => (),
-        Err(error) => {
-            transaction.rollback().await.unwrap();
-            log::error!("Update movie image: {error}");
-            return Ok(Response::new(500));
-        }
+    if let Err(error) =
+        repositories::update_movie_image(pool, &path, movie_id as i32).await
+    {
+        transaction.rollback().await.unwrap();
+        log::error!("Update movie image: {error}");
+        return Ok(Response::new(500));
     };
 
     let file = OpenOptions::new()
@@ -213,17 +223,14 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
         .await
         .unwrap();
 
-    match io::copy(req, file).await {
-        Ok(_) => {
-            transaction.commit().await.unwrap();
-            Ok(Response::new(200))
-        }
-        Err(error) => {
-            transaction.rollback().await.unwrap();
-            log::error!("Save image for movie: {error}");
-            Ok(Response::new(500))
-        }
+    if let Err(error) = io::copy(req, file).await {
+        transaction.rollback().await.unwrap();
+        log::error!("Save image for movie: {error}");
+        return Ok(Response::new(500));
     }
+
+    transaction.commit().await.unwrap();
+    Ok(Response::new(200))
 }
 
 pub async fn upload_movie(req: Request<State>) -> Result<Response> {
@@ -361,14 +368,42 @@ pub async fn fraction_movie(
 
     if let Err(error) = fs::remove_file(format!("{folder}/movie.mp4")).await {
         log::error!("Remove movie: {error}");
-        return Ok(());
     }
 
     Ok(())
 }
 
-pub async fn update_movie(_req: Request<State>) -> Result<Response> {
-    Ok(Response::new(200))
+pub async fn update_movie(mut req: Request<State>) -> Result<Response> {
+    let body: UpdateMovie = match req.body_json().await {
+        Ok(val) => val,
+        Err(error) => {
+            let response = Response::builder(422)
+                .body(json!({ "message": format!("{error}") }))
+                .content_type(JSON)
+                .build();
+
+            return Ok(response);
+        }
+    };
+    let pool = req.state().pool.clone();
+    let transaction = pool.begin().await.unwrap();
+
+    match repositories::update_movie(pool, body).await {
+        Ok(rows_affected) => {
+            if rows_affected == 0 {
+                transaction.rollback().await.unwrap();
+                return Ok(Response::new(404));
+            }
+
+            transaction.commit().await.unwrap();
+            Ok(Response::new(200))
+        }
+        Err(error) => {
+            transaction.rollback().await.unwrap();
+            log::error!("Update movie: {error}");
+            Ok(Response::new(500))
+        }
+    }
 }
 
 pub async fn delete_movie(req: Request<State>) -> Result<Response> {
@@ -379,7 +414,11 @@ pub async fn delete_movie(req: Request<State>) -> Result<Response> {
     let pool = req.state().pool.clone();
 
     match repositories::delete_movie(pool, movie_id as i32).await {
-        Ok(_) => {
+        Ok(rows_affected) => {
+            if rows_affected == 0 {
+                return Ok(Response::new(404));
+            }
+
             if let Err(error) =
                 fs::remove_file(format!("{movie_id}/movie.mp4")).await
             {
@@ -388,7 +427,6 @@ pub async fn delete_movie(req: Request<State>) -> Result<Response> {
 
             Ok(Response::new(200))
         }
-        Err(sqlx::Error::RowNotFound) => Ok(Response::new(404)),
         Err(error) => {
             log::error!("Delete movie: {error}");
             Ok(Response::new(500))
