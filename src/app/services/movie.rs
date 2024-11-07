@@ -419,10 +419,21 @@ pub async fn delete_movie(req: Request<State>) -> Result<Response> {
                 return Ok(Response::new(404));
             }
 
+            let upload_path = req.state().upload_path.clone();
+
             if let Err(error) =
-                fs::remove_file(format!("{movie_id}/movie.mp4")).await
+                fs::remove_dir_all(format!("{upload_path}/movies/{movie_id}"))
+                    .await
             {
-                log::error!("Remove movie: {error}");
+                log::error!("Remove movie's folder: {error}");
+            }
+
+            if let Err(error) = fs::remove_file(format!(
+                "{upload_path}/images/movies/{movie_id}.jpg"
+            ))
+            .await
+            {
+                log::error!("Remove movie's image: {error}");
             }
 
             Ok(Response::new(200))
