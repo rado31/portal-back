@@ -49,3 +49,15 @@ CREATE TABLE movies_sub_categories (
 			REFERENCES sub_categories (id)
 				ON DELETE SET NULL
 );
+
+CREATE TABLE musics (
+	id SERIAL PRIMARY KEY,
+	title JSONB NOT NULL,
+	path VARCHAR NULL
+);
+
+CREATE TABLE books (
+	id SERIAL PRIMARY KEY,
+	title JSONB NOT NULL,
+	path VARCHAR NULL
+);

@@ -1,6 +1,5 @@
 use crate::app::schemas::{
-    CreateMovie, MainPageData, MainPageMovie, Movies, SubCategory, Translate,
-    UpdateMovie,
+    req, MainPageData, MainPageMovie, Movies, SubCategory, Translate,
 };
 use crate::app::{queries, schemas::Movie};
 use serde_json::{from_str, from_value};
@@ -212,7 +211,7 @@ pub async fn search_movie(
 
 pub async fn create_movie(
     pool: Arc<Pool<Postgres>>,
-    body: CreateMovie,
+    body: req::movie::CreateMovie,
 ) -> Result<i32, Error> {
     let row = query(queries::CREATE_MOVIE)
         .bind(Json(body.title))
@@ -250,7 +249,7 @@ pub async fn update_movie_image(
 
 pub async fn update_movie(
     pool: Arc<Pool<Postgres>>,
-    body: UpdateMovie,
+    body: req::movie::UpdateMovie,
 ) -> Result<u64, Error> {
     let row = query(queries::UPDATE_MOVIE)
         .bind(Json(body.title))

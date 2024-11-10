@@ -2,6 +2,7 @@ mod auth;
 mod category;
 mod main_page;
 mod movie;
+pub mod music;
 
 pub use auth::*;
 pub use category::*;

@@ -1,8 +1,5 @@
 use crate::{
-    app::{
-        repositories,
-        schemas::{CreateMovie, MovieQuery, UpdateMovie},
-    },
+    app::{repositories, schemas::req},
     config::State,
     utils::{count_total_frames, save_file},
 };
@@ -18,7 +15,7 @@ use std::{
 use tide::{http::mime::JSON, log, Request, Response, Result};
 
 pub async fn get_movies(req: Request<State>) -> Result<Response> {
-    let mut query: MovieQuery = match req.query() {
+    let mut query: req::PaginationQuery = match req.query() {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)
@@ -86,7 +83,7 @@ pub async fn get_movies_by_sc(req: Request<State>) -> Result<Response> {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
-    let mut query: MovieQuery = match req.query() {
+    let mut query: req::PaginationQuery = match req.query() {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)
@@ -165,7 +162,7 @@ pub async fn search_movie(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn create_movie(mut req: Request<State>) -> Result<Response> {
-    let body: CreateMovie = match req.body_json().await {
+    let body: req::movie::CreateMovie = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)
@@ -374,7 +371,7 @@ pub async fn fraction_movie(
 }
 
 pub async fn update_movie(mut req: Request<State>) -> Result<Response> {
-    let body: UpdateMovie = match req.body_json().await {
+    let body: req::movie::UpdateMovie = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)

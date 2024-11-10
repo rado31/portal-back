@@ -45,3 +45,18 @@ pub fn movie(state: State) -> tide::Server<State> {
 
     api
 }
+
+pub fn music(state: State) -> tide::Server<State> {
+    let mut api = tide::with_state(state);
+
+    api.at("/")
+        .get(services::music::all)
+        .post(services::music::create)
+        .put(services::music::update);
+    api.at("/:id")
+        .get(services::music::one)
+        .post(services::music::upload)
+        .delete(services::music::delete);
+
+    api
+}

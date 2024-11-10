@@ -1,8 +1,5 @@
 use crate::{
-    app::{
-        repositories,
-        schemas::{CreateSubCategory, UpdateSubCategory},
-    },
+    app::{repositories, schemas::req},
     config::State,
 };
 use serde_json::json;
@@ -66,7 +63,7 @@ pub async fn get_sub_categories(req: Request<State>) -> Result<Response> {
 }
 
 pub async fn create_sub_category(mut req: Request<State>) -> Result<Response> {
-    let body: CreateSubCategory = match req.body_json().await {
+    let body: req::category::CreateSubCategory = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)
@@ -109,7 +106,7 @@ pub async fn create_sub_category(mut req: Request<State>) -> Result<Response> {
 }
 
 pub async fn update_sub_category(mut req: Request<State>) -> Result<Response> {
-    let body: UpdateSubCategory = match req.body_json().await {
+    let body: req::category::UpdateSubCategory = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)
