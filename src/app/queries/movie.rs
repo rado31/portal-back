@@ -145,6 +145,9 @@ pub const CREATE_MOVIE_SC: &str = r#"
     INSERT INTO movies_sub_categories (movie_id, sub_category_id)
     VALUES ($1, $2)
 "#;
+pub const DELETE_MOVIE_SC: &str = r#"
+    DELETE FROM movies_sub_categories WHERE movie_id = $1
+"#;
 pub const UPDATE_MOVIE_IMAGE: &str = r#"
     UPDATE movies SET image = $1 WHERE id = $2
 "#;

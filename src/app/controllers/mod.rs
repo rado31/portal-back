@@ -29,11 +29,11 @@ pub fn movie(state: State) -> tide::Server<State> {
 
     api.at("/")
         .get(services::get_movies)
-        .post(services::create_movie);
+        .post(services::create_movie)
+        .put(services::update_movie);
     api.at("/:id")
         .get(services::get_movie)
         .post(services::upload_movie)
-        .put(services::update_movie)
         .delete(services::delete_movie);
     api.at("/sub/:id").get(services::get_movies_by_sc);
     api.at("/main-page").get(services::get_main_page_data);

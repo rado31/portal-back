@@ -261,7 +261,26 @@ pub async fn update_movie(
         .execute(&*pool)
         .await?;
 
-    Ok(row.rows_affected())
+    let affected = row.rows_affected();
+
+    if affected == 0 {
+        return Ok(0);
+    }
+
+    query(queries::DELETE_MOVIE_SC)
+        .bind(body.id as i32)
+        .execute(&*pool)
+        .await?;
+
+    for sub_id in body.sub_categories {
+        query(queries::CREATE_MOVIE_SC)
+            .bind(body.id as i32)
+            .bind(sub_id as i32)
+            .execute(&*pool)
+            .await?;
+    }
+
+    Ok(affected)
 }
 
 pub async fn delete_movie(
