@@ -138,8 +138,8 @@ pub const SEARCH_MOVIE: &str = r#"
 	)  
 "#;
 pub const CREATE_MOVIE: &str = r#"
-    INSERT INTO movies (title, description, duration, category_id)
-    VALUES ($1, $2, $3, 1) RETURNING id
+    INSERT INTO movies (title, description, duration)
+    VALUES ($1, $2, $3) RETURNING id
 "#;
 pub const CREATE_MOVIE_SC: &str = r#"
     INSERT INTO movies_sub_categories (movie_id, sub_category_id)

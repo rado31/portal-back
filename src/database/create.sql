@@ -27,7 +27,7 @@ CREATE TABLE movies (
 	duration INTEGER NOT NULL,
 	image VARCHAR NULL,
 	status BOOLEAN DEFAULT true,
-	category_id INTEGER NULL,
+	category_id INTEGER DEFAULT 1,
 
 	CONSTRAINT category_id
 		FOREIGN KEY (category_id)
