@@ -237,13 +237,13 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/movies/2",
+							"raw": "{{host}}/movies/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"movies",
-								"2"
+								"1"
 							]
 						}
 					},
@@ -392,16 +392,15 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"id\": 1,\n\t\"title\": {\n\t\t\"tk\": \"shrek\",\n\t\t\"ru\": \"шрек\"\n\t},\n\t\"description\": {\n\t\t\"tk\": \"qwe\",\n\t\t\"ru\": \"asd\"\n\t},\n\t\"duration\": 3600,\n\t\"status\": false,\n\t\"sub_categories\": [1]\n}"
+							"raw": "{\n\t\"id\": 1,\n\t\"title\": {\n\t\t\"tk\": \"shrek\",\n\t\t\"ru\": \"шрек\"\n\t},\n\t\"description\": {\n\t\t\"tk\": \"qwe\",\n\t\t\"ru\": \"asd\"\n\t},\n\t\"duration\": 3600,\n\t\"status\": false,\n\t\"sub_categories\": [1, 2, 3]\n}"
 						},
 						"url": {
-							"raw": "{{host}}/movies/1",
+							"raw": "{{host}}/movies",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"movies",
-								"1"
+								"movies"
 							]
 						}
 					},
@@ -454,13 +453,13 @@
 							"file": {}
 						},
 						"url": {
-							"raw": "{{host}}/movies/2",
+							"raw": "{{host}}/movies/3",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"movies",
-								"2"
+								"3"
 							]
 						}
 					},
@@ -522,6 +521,324 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Music",
+			"item": [
+				{
+					"name": "All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/musics?page=1&count=10",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"musics"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "count",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/musics/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"musics",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": {\n\t\t\"tk\": \"50 cent\",\n\t\t\"ru\": \"50 копеек\"\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{host}}/musics",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"musics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"id\": 1,\n\t\"title\": {\n\t\t\"tk\": \"50 cent\",\n\t\t\"ru\": \"50 копеек\"\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{host}}/musics",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"musics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/musics/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"musics",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "file",
+							"file": {}
+						},
+						"url": {
+							"raw": "{{host}}/musics/upload/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"musics",
+								"upload",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Book",
+			"item": [
+				{
+					"name": "All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/books?page=1&count=10",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"books"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "count",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/books/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"books",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": {\n\t\t\"tk\": \"Garry Potter\",\n\t\t\"ru\": \"Гарри Поттер\"\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{host}}/books",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"id\": 1,\n\t\"title\": {\n\t\t\"tk\": \"Garry Potter\",\n\t\t\"ru\": \"Гарри Поттер\"\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{host}}/books",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/books/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"books",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "file",
+							"file": {}
+						},
+						"url": {
+							"raw": "{{host}}/books/upload/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"books",
+								"upload",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"auth": {
@@ -558,13 +875,13 @@
 	],
 	"variable": [
 		{
-			"id": "f64d9cc7-68fd-420d-bea2-62beface0fb5",
+			"id": "629d3db6-3bcd-49c0-9311-e4bf88fe8a49",
 			"key": "host",
 			"value": "172.31.13.14:8080",
 			"type": "string"
 		},
 		{
-			"id": "75aca11b-afdc-4272-a246-05e415ca4fb8",
+			"id": "b67cb7ab-5e4d-4006-b360-0c72d3e975d1",
 			"key": "public",
 			"value": "213.130.144.154",
 			"type": "string"
