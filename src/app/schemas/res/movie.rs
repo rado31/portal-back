@@ -21,6 +21,6 @@ pub struct Movie {
 
 #[derive(Serialize, Deserialize)]
 pub struct SubCategory {
-    pub id: i32,
-    pub title: Translate,
+    pub id: Option<i32>,
+    pub title: Option<Translate>,
 }
