@@ -4,7 +4,7 @@ use crate::config::State;
 pub fn auth(state: State) -> tide::Server<State> {
     let mut api = tide::with_state(state);
 
-    api.at("/sign-in").post(services::sign_in);
+    api.at("/sign-in").post(services::auth::sign_in);
 
     api
 }
@@ -13,13 +13,13 @@ pub fn category(state: State) -> tide::Server<State> {
     let mut api = tide::with_state(state);
 
     //api.with(middlewares::JwtMiddleware::new(state.key));
-    api.at("/:id/sub").get(services::get_sub_categories);
+    api.at("/:id/sub").get(services::category::all);
     api.at("/sub/:id")
-        .get(services::get_sub_category)
-        .delete(services::delete_sub_category);
+        .get(services::category::one)
+        .delete(services::category::delete);
     api.at("/sub")
-        .post(services::create_sub_category)
-        .put(services::update_sub_category);
+        .post(services::category::create)
+        .put(services::category::update);
 
     api
 }
@@ -28,20 +28,20 @@ pub fn movie(state: State) -> tide::Server<State> {
     let mut api = tide::with_state(state);
 
     api.at("/")
-        .get(services::get_movies)
-        .post(services::create_movie)
-        .put(services::update_movie);
+        .get(services::movie::all)
+        .post(services::movie::create)
+        .put(services::movie::update);
     api.at("/:id")
-        .get(services::get_movie)
-        .post(services::upload_movie)
-        .delete(services::delete_movie);
-    api.at("/sub/:id").get(services::get_movies_by_sc);
-    api.at("/main-page").get(services::get_main_page_data);
-    api.at("/video/:id").get(services::serve_movie);
+        .get(services::movie::one)
+        .post(services::movie::upload)
+        .delete(services::movie::delete);
+    api.at("/sub/:id").get(services::movie::all_by_sc);
+    api.at("/main-page").get(services::movie::main_page);
+    api.at("/video/:id").get(services::movie::serve);
     api.at("/fraction/:id")
-        .get(tide::sse::endpoint(services::fraction_movie));
-    api.at("/image/:id").post(services::upload_image);
-    api.at("/search/:text").get(services::search_movie);
+        .get(tide::sse::endpoint(services::movie::fraction));
+    api.at("/image/:id").post(services::movie::upload_image);
+    api.at("/search/:text").get(services::movie::search);
 
     api
 }

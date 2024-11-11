@@ -103,6 +103,15 @@ pub async fn upload(req: Request<State>) -> Result<Response> {
     };
     let pool = req.state().pool.clone();
 
+    match repositories::music::one(pool.clone(), music_id as i32).await {
+        Ok(_) => (),
+        Err(sqlx::Error::RowNotFound) => return Ok(Response::new(404)),
+        Err(error) => {
+            log::error!("Check music exists for upload: {error}");
+            return Ok(Response::new(500));
+        }
+    };
+
     let upload_path = req.state().upload_path.clone();
     let path = format!("/uploads/musics/{music_id}.mp3");
     let transaction = pool.begin().await.unwrap();

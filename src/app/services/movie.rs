@@ -14,7 +14,7 @@ use std::{
 };
 use tide::{http::mime::JSON, log, Request, Response, Result};
 
-pub async fn get_movies(req: Request<State>) -> Result<Response> {
+pub async fn all(req: Request<State>) -> Result<Response> {
     let mut query: req::PaginationQuery = match req.query() {
         Ok(val) => val,
         Err(error) => {
@@ -31,7 +31,7 @@ pub async fn get_movies(req: Request<State>) -> Result<Response> {
 
     query.page_to_offset();
 
-    match repositories::get_movies(
+    match repositories::movie::all(
         pool,
         true, // TO-DO for release set to variable above "is_admin"
         query.page as i32,
@@ -54,14 +54,14 @@ pub async fn get_movies(req: Request<State>) -> Result<Response> {
     }
 }
 
-pub async fn get_movie(req: Request<State>) -> Result<Response> {
+pub async fn one(req: Request<State>) -> Result<Response> {
     let movie_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
     let pool = req.state().pool.clone();
 
-    match repositories::get_movie(pool, movie_id as i32).await {
+    match repositories::movie::one(pool, movie_id as i32).await {
         Ok(movies) => {
             let response = Response::builder(200)
                 .body(json!(movies))
@@ -78,7 +78,7 @@ pub async fn get_movie(req: Request<State>) -> Result<Response> {
     }
 }
 
-pub async fn get_movies_by_sc(req: Request<State>) -> Result<Response> {
+pub async fn all_by_sc(req: Request<State>) -> Result<Response> {
     let sub_category_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
@@ -98,7 +98,7 @@ pub async fn get_movies_by_sc(req: Request<State>) -> Result<Response> {
 
     query.page_to_offset();
 
-    match repositories::get_movies_by_sc(
+    match repositories::movie::all_by_sc(
         pool,
         sub_category_id as i32,
         query.page as i32,
@@ -122,10 +122,10 @@ pub async fn get_movies_by_sc(req: Request<State>) -> Result<Response> {
     }
 }
 
-pub async fn get_main_page_data(req: Request<State>) -> Result<Response> {
+pub async fn main_page(req: Request<State>) -> Result<Response> {
     let pool = req.state().pool.clone();
 
-    match repositories::get_main_page_data(pool).await {
+    match repositories::movie::main_page(pool).await {
         Ok(data) => {
             let response = Response::builder(200)
                 .body(json!(data))
@@ -141,11 +141,11 @@ pub async fn get_main_page_data(req: Request<State>) -> Result<Response> {
     }
 }
 
-pub async fn search_movie(req: Request<State>) -> Result<Response> {
+pub async fn search(req: Request<State>) -> Result<Response> {
     let text = req.param("text").unwrap();
     let pool = req.state().pool.clone();
 
-    match repositories::search_movie(pool, text).await {
+    match repositories::movie::search(pool, text).await {
         Ok(movies) => {
             let response = Response::builder(200)
                 .body(json!(movies))
@@ -161,8 +161,8 @@ pub async fn search_movie(req: Request<State>) -> Result<Response> {
     }
 }
 
-pub async fn create_movie(mut req: Request<State>) -> Result<Response> {
-    let body: req::movie::CreateMovie = match req.body_json().await {
+pub async fn create(mut req: Request<State>) -> Result<Response> {
+    let body: req::movie::Create = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)
@@ -176,7 +176,7 @@ pub async fn create_movie(mut req: Request<State>) -> Result<Response> {
     let pool = req.state().pool.clone();
     let transaction = pool.begin().await.unwrap();
 
-    match repositories::create_movie(pool, body).await {
+    match repositories::movie::create(pool, body).await {
         Ok(id) => {
             transaction.commit().await.unwrap();
             let response = Response::builder(200)
@@ -201,12 +201,22 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
     };
     let pool = req.state().pool.clone();
 
+    match repositories::movie::one(pool.clone(), movie_id as i32).await {
+        Ok(_) => (),
+        Err(sqlx::Error::RowNotFound) => return Ok(Response::new(404)),
+        Err(error) => {
+            log::error!("Check movie exists for image upload: {error}");
+            return Ok(Response::new(500));
+        }
+    };
+
     let upload_path = req.state().upload_path.clone();
     let path = format!("/uploads/images/movies/{movie_id}.jpg");
     let transaction = pool.begin().await.unwrap();
 
     if let Err(error) =
-        repositories::update_movie_image(pool, &path, movie_id as i32).await
+        repositories::movie::update_image_path(pool, &path, movie_id as i32)
+            .await
     {
         transaction.rollback().await.unwrap();
         log::error!("Update movie image: {error}");
@@ -230,14 +240,14 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
     Ok(Response::new(200))
 }
 
-pub async fn upload_movie(req: Request<State>) -> Result<Response> {
+pub async fn upload(req: Request<State>) -> Result<Response> {
     let movie_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
     let pool = req.state().pool.clone();
 
-    match repositories::get_movie(pool.clone(), movie_id as i32).await {
+    match repositories::movie::one(pool.clone(), movie_id as i32).await {
         Ok(_) => (),
         Err(sqlx::Error::RowNotFound) => return Ok(Response::new(404)),
         Err(error) => {
@@ -267,7 +277,7 @@ pub async fn upload_movie(req: Request<State>) -> Result<Response> {
     Ok(Response::new(200))
 }
 
-pub async fn serve_movie(req: Request<State>) -> Result<Response> {
+pub async fn serve(req: Request<State>) -> Result<Response> {
     let upload_path = req.state().upload_path.clone();
     let movie_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
@@ -309,7 +319,7 @@ pub async fn serve_movie(req: Request<State>) -> Result<Response> {
     Ok(Response::new(404))
 }
 
-pub async fn fraction_movie(
+pub async fn fraction(
     req: Request<State>,
     sender: tide::sse::Sender,
 ) -> Result<()> {
@@ -370,8 +380,8 @@ pub async fn fraction_movie(
     Ok(())
 }
 
-pub async fn update_movie(mut req: Request<State>) -> Result<Response> {
-    let body: req::movie::UpdateMovie = match req.body_json().await {
+pub async fn update(mut req: Request<State>) -> Result<Response> {
+    let body: req::movie::Update = match req.body_json().await {
         Ok(val) => val,
         Err(error) => {
             let response = Response::builder(422)
@@ -385,7 +395,7 @@ pub async fn update_movie(mut req: Request<State>) -> Result<Response> {
     let pool = req.state().pool.clone();
     let transaction = pool.begin().await.unwrap();
 
-    match repositories::update_movie(pool, body).await {
+    match repositories::movie::update(pool, body).await {
         Ok(rows_affected) => {
             if rows_affected == 0 {
                 transaction.rollback().await.unwrap();
@@ -403,14 +413,14 @@ pub async fn update_movie(mut req: Request<State>) -> Result<Response> {
     }
 }
 
-pub async fn delete_movie(req: Request<State>) -> Result<Response> {
+pub async fn delete(req: Request<State>) -> Result<Response> {
     let movie_id: u32 = match req.param("id").unwrap().parse() {
         Ok(id) => id,
         Err(_) => return Ok(Response::new(422)),
     };
     let pool = req.state().pool.clone();
 
-    match repositories::delete_movie(pool, movie_id as i32).await {
+    match repositories::movie::delete(pool, movie_id as i32).await {
         Ok(rows_affected) => {
             if rows_affected == 0 {
                 return Ok(Response::new(404));

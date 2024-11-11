@@ -2,7 +2,7 @@ use crate::app::schemas::Translate;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-pub struct CreateMovie {
+pub struct Create {
     pub title: Translate,
     pub description: Translate,
     pub duration: u32,
@@ -10,7 +10,7 @@ pub struct CreateMovie {
 }
 
 #[derive(Deserialize)]
-pub struct UpdateMovie {
+pub struct Update {
     pub id: u32,
     pub title: Translate,
     pub description: Translate,

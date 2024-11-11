@@ -11,7 +11,7 @@ pub async fn get_category(
     pool: Arc<Pool<Postgres>>,
     category_id: i32,
 ) -> Result<Category, Error> {
-    let row = query(queries::GET_CATEGORY)
+    let row = query(queries::category::GET_CATEGORY)
         .bind(category_id)
         .fetch_one(&*pool)
         .await?;
@@ -25,11 +25,11 @@ pub async fn get_category(
     Ok(category)
 }
 
-pub async fn get_sub_category(
+pub async fn one(
     pool: Arc<Pool<Postgres>>,
     sub_category_id: i32,
 ) -> Result<Category, Error> {
-    let row = query(queries::GET_SUB_CATEGORY)
+    let row = query(queries::category::ONE)
         .bind(sub_category_id)
         .fetch_one(&*pool)
         .await?;
@@ -43,11 +43,11 @@ pub async fn get_sub_category(
     Ok(category)
 }
 
-pub async fn get_sub_categories(
+pub async fn all(
     pool: Arc<Pool<Postgres>>,
     category_id: i32,
 ) -> Result<Vec<Category>, Error> {
-    let rows = query(queries::GET_SUB_CATEGORIES)
+    let rows = query(queries::category::ALL)
         .bind(category_id)
         .fetch_all(&*pool)
         .await?;
@@ -66,11 +66,11 @@ pub async fn get_sub_categories(
     Ok(sub_categories)
 }
 
-pub async fn create_sub_category(
+pub async fn create(
     pool: Arc<Pool<Postgres>>,
-    body: req::category::CreateSubCategory,
+    body: req::category::Create,
 ) -> Result<i32, Error> {
-    let row = sqlx::query(queries::CREATE_SUB_CATEGORY)
+    let row = sqlx::query(queries::category::CREATE)
         .bind(Json(body.title))
         .bind(body.category_id as i32)
         .fetch_one(&*pool)
@@ -79,11 +79,11 @@ pub async fn create_sub_category(
     Ok(row.try_get("id")?)
 }
 
-pub async fn update_sub_category(
+pub async fn update(
     pool: Arc<Pool<Postgres>>,
-    body: req::category::UpdateSubCategory,
+    body: req::category::Update,
 ) -> Result<u64, Error> {
-    let row = sqlx::query(queries::UPDATE_SUB_CATEGORY)
+    let row = sqlx::query(queries::category::UPDATE)
         .bind(Json(body.title))
         .bind(body.id as i32)
         .execute(&*pool)
@@ -92,11 +92,11 @@ pub async fn update_sub_category(
     Ok(row.rows_affected())
 }
 
-pub async fn delete_sub_category(
+pub async fn delete(
     pool: Arc<Pool<Postgres>>,
     sub_category_id: i32,
 ) -> Result<u64, Error> {
-    let row = sqlx::query(queries::DELETE_SUB_CATEGORY)
+    let row = sqlx::query(queries::category::DELETE)
         .bind(sub_category_id)
         .execute(&*pool)
         .await?;

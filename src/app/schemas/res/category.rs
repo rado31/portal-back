@@ -1,4 +1,4 @@
-use crate::app::schemas::translate::Translate;
+use crate::app::schemas::Translate;
 use serde::Serialize;
 
 #[derive(Serialize)]

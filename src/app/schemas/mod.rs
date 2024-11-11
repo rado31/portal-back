@@ -1,6 +1,12 @@
+use serde::{Deserialize, Serialize};
+
 pub mod req;
 mod res;
-mod translate;
 
 pub use res::*;
-pub use translate::Translate;
+
+#[derive(Serialize, Deserialize)]
+pub struct Translate {
+    pub tk: String,
+    pub ru: String,
+}

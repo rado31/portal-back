@@ -1,8 +1,4 @@
-mod auth;
-mod category;
-mod movie;
+pub mod auth;
+pub mod category;
+pub mod movie;
 pub mod music;
-
-pub use auth::*;
-pub use category::*;
-pub use movie::*;

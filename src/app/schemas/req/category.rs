@@ -2,13 +2,13 @@ use crate::app::schemas::Translate;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
-pub struct CreateSubCategory {
+pub struct Create {
     pub category_id: u32,
     pub title: Translate,
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct UpdateSubCategory {
+pub struct Update {
     pub id: u32,
     pub title: Translate,
 }

@@ -6,7 +6,7 @@ pub async fn get_admin(
     pool: Arc<Pool<Postgres>>,
     login: String,
 ) -> Result<Admin, Error> {
-    let admin: Admin = query_as(queries::GET_ADMIN)
+    let admin: Admin = query_as(queries::auth::GET_ADMIN)
         .bind(login)
         .fetch_one(&*pool)
         .await?;

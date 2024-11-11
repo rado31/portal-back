@@ -23,7 +23,7 @@ pub async fn sign_in(mut req: Request<State>) -> Result<Response> {
     let exp = req.state().exp;
 
     if body.login == "rado" {
-        match repositories::get_admin(pool, body.login).await {
+        match repositories::auth::get_admin(pool, body.login).await {
             Ok(admin) => {
                 if !bcrypt::verify(body.password, &admin.password).unwrap() {
                     return Ok(Response::new(403));

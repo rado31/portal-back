@@ -1,4 +1,4 @@
-pub const GET_MAIN_PAGE_DATA: &str = r#"
+pub const MOVIES: &str = r#"
     SELECT
         s.id,
         s.title,

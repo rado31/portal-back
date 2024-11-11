@@ -55,7 +55,7 @@ pub async fn one(
     let title: Translate = from_value(v_title).unwrap();
 
     let music = Music {
-        id: row.get("id"),
+        id: row.try_get("id")?,
         title,
         path: row.get("path"),
     };

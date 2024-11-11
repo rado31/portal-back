@@ -9,7 +9,7 @@ use sqlx::Row;
 use sqlx::{query, Error, Pool, Postgres};
 use std::sync::Arc;
 
-pub async fn get_movies(
+pub async fn all(
     pool: Arc<Pool<Postgres>>,
     status: bool,
     offset: i32,
@@ -19,13 +19,13 @@ pub async fn get_movies(
     let mut rows: Vec<PgRow> = vec![];
 
     if status {
-        rows = query(queries::GET_MOVIES_FOR_ADMIN)
+        rows = query(queries::movie::ALL_FOR_ADMIN)
             .bind(offset)
             .bind(limit)
             .fetch_all(&*pool)
             .await?;
     } else {
-        rows = query(queries::GET_MOVIES)
+        rows = query(queries::movie::ALL)
             .bind(offset)
             .bind(limit)
             .fetch_all(&*pool)
@@ -61,11 +61,11 @@ pub async fn get_movies(
     Ok(movies)
 }
 
-pub async fn get_movie(
+pub async fn one(
     pool: Arc<Pool<Postgres>>,
     movie_id: i32,
 ) -> Result<Movie, Error> {
-    let row = query(queries::GET_MOVIE)
+    let row = query(queries::movie::ONE)
         .bind(movie_id)
         .fetch_one(&*pool)
         .await?;
@@ -93,13 +93,13 @@ pub async fn get_movie(
     Ok(movie)
 }
 
-pub async fn get_movies_by_sc(
+pub async fn all_by_sc(
     pool: Arc<Pool<Postgres>>,
     sub_category_id: i32,
     offset: i32,
     limit: i32,
 ) -> Result<Movies, Error> {
-    let rows = query(queries::GET_MOVIES_BY_SC)
+    let rows = query(queries::movie::ALL_BY_SC)
         .bind(sub_category_id)
         .bind(offset)
         .bind(limit)
@@ -132,7 +132,7 @@ pub async fn get_movies_by_sc(
         })
         .collect();
 
-    let row = query(queries::GET_MOVIES_BY_SC_TOTAL)
+    let row = query(queries::movie::ALL_BY_SC_TOTAL)
         .bind(sub_category_id)
         .fetch_one(&*pool)
         .await?;
@@ -145,10 +145,10 @@ pub async fn get_movies_by_sc(
     Ok(res)
 }
 
-pub async fn get_main_page_data(
+pub async fn main_page(
     pool: Arc<Pool<Postgres>>,
 ) -> Result<Vec<MainPageData>, Error> {
-    let rows = query(queries::GET_MAIN_PAGE_DATA).fetch_all(&*pool).await?;
+    let rows = query(queries::main_page::MOVIES).fetch_all(&*pool).await?;
 
     let result = rows
         .iter()
@@ -171,11 +171,11 @@ pub async fn get_main_page_data(
     Ok(result)
 }
 
-pub async fn search_movie(
+pub async fn search(
     pool: Arc<Pool<Postgres>>,
     text: &str,
 ) -> Result<Vec<Movie>, Error> {
-    let rows = query(queries::SEARCH_MOVIE)
+    let rows = query(queries::movie::SEARCH)
         .bind(text)
         .fetch_all(&*pool)
         .await?;
@@ -209,11 +209,11 @@ pub async fn search_movie(
     Ok(movies)
 }
 
-pub async fn create_movie(
+pub async fn create(
     pool: Arc<Pool<Postgres>>,
-    body: req::movie::CreateMovie,
+    body: req::movie::Create,
 ) -> Result<i32, Error> {
-    let row = query(queries::CREATE_MOVIE)
+    let row = query(queries::movie::CREATE)
         .bind(Json(body.title))
         .bind(Json(body.description))
         .bind(body.duration as i32)
@@ -223,7 +223,7 @@ pub async fn create_movie(
     let movie_id = row.try_get("id")?;
 
     for id in body.sub_categories {
-        query(queries::CREATE_MOVIE_SC)
+        query(queries::movie::CREATE_SC)
             .bind(movie_id)
             .bind(id as i32)
             .execute(&*pool)
@@ -233,12 +233,12 @@ pub async fn create_movie(
     Ok(movie_id)
 }
 
-pub async fn update_movie_image(
+pub async fn update_image_path(
     pool: Arc<Pool<Postgres>>,
     path: &str,
     movie_id: i32,
 ) -> Result<(), Error> {
-    query(queries::UPDATE_MOVIE_IMAGE)
+    query(queries::movie::UPDATE_IMAGE_PATH)
         .bind(path)
         .bind(movie_id)
         .execute(&*pool)
@@ -247,11 +247,11 @@ pub async fn update_movie_image(
     Ok(())
 }
 
-pub async fn update_movie(
+pub async fn update(
     pool: Arc<Pool<Postgres>>,
-    body: req::movie::UpdateMovie,
+    body: req::movie::Update,
 ) -> Result<u64, Error> {
-    let row = query(queries::UPDATE_MOVIE)
+    let row = query(queries::movie::UPDATE)
         .bind(Json(body.title))
         .bind(Json(body.description))
         .bind(body.duration as i32)
@@ -266,13 +266,13 @@ pub async fn update_movie(
         return Ok(0);
     }
 
-    query(queries::DELETE_MOVIE_SC)
+    query(queries::movie::DELETE_SC)
         .bind(body.id as i32)
         .execute(&*pool)
         .await?;
 
     for sub_id in body.sub_categories {
-        query(queries::CREATE_MOVIE_SC)
+        query(queries::movie::CREATE_SC)
             .bind(body.id as i32)
             .bind(sub_id as i32)
             .execute(&*pool)
@@ -282,11 +282,11 @@ pub async fn update_movie(
     Ok(affected)
 }
 
-pub async fn delete_movie(
+pub async fn delete(
     pool: Arc<Pool<Postgres>>,
     movie_id: i32,
 ) -> Result<u64, Error> {
-    let row = query(queries::DELETE_MOVIE)
+    let row = query(queries::movie::DELETE)
         .bind(movie_id)
         .execute(&*pool)
         .await?;
