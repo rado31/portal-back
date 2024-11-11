@@ -6,6 +6,7 @@ pub const ALL_FOR_ADMIN: &str = r#"
         m.duration,
         m.image,
         m.status,
+        m.is_uploaded,
         ARRAY(
             SELECT
                 JSON_BUILD_OBJECT(
@@ -32,6 +33,7 @@ pub const ALL: &str = r#"
         m.duration,
         m.image,
         m.status,
+        m.is_uploaded,
         ARRAY(
             SELECT
                 JSON_BUILD_OBJECT(
@@ -59,6 +61,7 @@ pub const ONE: &str = r#"
         m.duration,
         m.image,
         m.status,
+        m.is_uploaded,
         ARRAY(
             SELECT
                 JSON_BUILD_OBJECT(
@@ -89,6 +92,7 @@ pub const ALL_BY_SC: &str = r#"
         m.duration,
         m.image,
         m.status,
+        m.is_uploaded,
         ARRAY(
             SELECT
                 JSON_BUILD_OBJECT(
@@ -116,6 +120,7 @@ pub const SEARCH: &str = r#"
         m.duration,
         m.image,
         m.status,
+        m.is_uploaded,
         ARRAY(
             SELECT
                 JSON_BUILD_OBJECT(
@@ -154,6 +159,9 @@ pub const UPDATE_IMAGE_PATH: &str = r#"
 pub const UPDATE: &str = r#"
     UPDATE movies SET title = $1, description = $2, duration = $3, status = $4
     WHERE id = $5
+"#;
+pub const UPDATE_UPLOADED_STATUS: &str = r#"
+    UPDATE movies SET is_uploaded = true WHERE id = $1
 "#;
 pub const DELETE: &str = r#"
     DELETE FROM movies WHERE id = $1 RETURNING id

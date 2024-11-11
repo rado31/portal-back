@@ -377,6 +377,13 @@ pub async fn fraction(
         log::error!("Remove movie: {error}");
     }
 
+    let pool = req.state().pool.clone();
+    if let Err(error) =
+        repositories::movie::update_upload_status(pool, movie_id as i32).await
+    {
+        log::error!("Update upload status: {error}");
+    }
+
     Ok(())
 }
 

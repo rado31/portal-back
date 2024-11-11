@@ -53,6 +53,7 @@ pub async fn all(
                 duration: row.get("duration"),
                 image: row.get("image"),
                 status: row.get("status"),
+                is_uploaded: row.get("is_uploaded"),
                 sub_categories: sc,
             }
         })
@@ -87,6 +88,7 @@ pub async fn one(
         duration: row.get("duration"),
         image: row.get("image"),
         status: row.get("status"),
+        is_uploaded: row.get("is_uploaded"),
         sub_categories: sc,
     };
 
@@ -127,6 +129,7 @@ pub async fn all_by_sc(
                 duration: row.get("duration"),
                 image: row.get("image"),
                 status: row.get("status"),
+                is_uploaded: row.get("is_uploaded"),
                 sub_categories: sc,
             }
         })
@@ -201,6 +204,7 @@ pub async fn search(
                 duration: row.get("duration"),
                 image: row.get("image"),
                 status: row.get("status"),
+                is_uploaded: row.get("is_uploaded"),
                 sub_categories: sc,
             }
         })
@@ -240,6 +244,18 @@ pub async fn update_image_path(
 ) -> Result<(), Error> {
     query(queries::movie::UPDATE_IMAGE_PATH)
         .bind(path)
+        .bind(movie_id)
+        .execute(&*pool)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn update_upload_status(
+    pool: Arc<Pool<Postgres>>,
+    movie_id: i32,
+) -> Result<(), Error> {
+    query(queries::movie::UPDATE_UPLOADED_STATUS)
         .bind(movie_id)
         .execute(&*pool)
         .await?;
