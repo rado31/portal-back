@@ -1,5 +1,6 @@
 use serde::Deserialize;
 
+pub mod book;
 pub mod category;
 pub mod movie;
 pub mod music;

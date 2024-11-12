@@ -60,3 +60,18 @@ pub fn music(state: State) -> tide::Server<State> {
 
     api
 }
+
+pub fn book(state: State) -> tide::Server<State> {
+    let mut api = tide::with_state(state);
+
+    api.at("/")
+        .get(services::book::all)
+        .post(services::book::create)
+        .put(services::book::update);
+    api.at("/:id")
+        .get(services::book::one)
+        .post(services::book::upload)
+        .delete(services::book::delete);
+
+    api
+}
