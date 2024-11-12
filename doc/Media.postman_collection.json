@@ -237,13 +237,13 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/movies/1",
+							"raw": "{{host}}/movies/4",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"movies",
-								"1"
+								"4"
 							]
 						}
 					},
@@ -453,13 +453,13 @@
 							"file": {}
 						},
 						"url": {
-							"raw": "{{host}}/movies/3",
+							"raw": "{{host}}/movies/4",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"movies",
-								"3"
+								"4"
 							]
 						}
 					},
@@ -485,14 +485,14 @@
 							"file": {}
 						},
 						"url": {
-							"raw": "{{host}}/movies/fraction/2",
+							"raw": "{{host}}/movies/fraction/4",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"movies",
 								"fraction",
-								"2"
+								"4"
 							]
 						}
 					},
@@ -566,13 +566,13 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/musics/1",
+							"raw": "{{host}}/musics/2",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"musics",
-								"1"
+								"2"
 							]
 						}
 					},
@@ -592,7 +592,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": {\n\t\t\"tk\": \"50 cent\",\n\t\t\"ru\": \"50 копеек\"\n\t}\n}"
+							"raw": "{\n\t\"title\": {\n\t\t\"tk\": \"Aydym diyop san\",\n\t\t\"ru\": \"Изумительная песня\"\n\t}\n}"
 						},
 						"url": {
 							"raw": "{{host}}/musics",
@@ -620,7 +620,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"id\": 1,\n\t\"title\": {\n\t\t\"tk\": \"50 cent\",\n\t\t\"ru\": \"50 копеек\"\n\t}\n}"
+							"raw": "{\n\t\"id\": 1,\n\t\"title\": {\n\t\t\"tk\": \"30 cent\",\n\t\t\"ru\": \"30 копеек\"\n\t}\n}"
 						},
 						"url": {
 							"raw": "{{host}}/musics",
@@ -666,14 +666,13 @@
 							"file": {}
 						},
 						"url": {
-							"raw": "{{host}}/musics/upload/1",
+							"raw": "{{host}}/musics/2",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"musics",
-								"upload",
-								"1"
+								"2"
 							]
 						}
 					},
@@ -779,7 +778,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"id\": 1,\n\t\"title\": {\n\t\t\"tk\": \"Garry Potter\",\n\t\t\"ru\": \"Гарри Поттер\"\n\t}\n}"
+							"raw": "{\n\t\"id\": 1,\n\t\"title\": {\n\t\t\"tk\": \"Guwanc Daughter\",\n\t\t\"ru\": \"Гуванч Daughter\"\n\t}\n}"
 						},
 						"url": {
 							"raw": "{{host}}/books",
@@ -825,13 +824,12 @@
 							"file": {}
 						},
 						"url": {
-							"raw": "{{host}}/books/upload/1",
+							"raw": "{{host}}/books/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"books",
-								"upload",
 								"1"
 							]
 						}
@@ -875,13 +873,13 @@
 	],
 	"variable": [
 		{
-			"id": "629d3db6-3bcd-49c0-9311-e4bf88fe8a49",
+			"id": "1645eef2-6fa3-4f54-b233-f9422e700503",
 			"key": "host",
 			"value": "172.31.13.14:8080",
 			"type": "string"
 		},
 		{
-			"id": "b67cb7ab-5e4d-4006-b360-0c72d3e975d1",
+			"id": "cb5dd394-66fb-4c53-8e56-50aaf20b123f",
 			"key": "public",
 			"value": "213.130.144.154",
 			"type": "string"
