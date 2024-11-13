@@ -3,20 +3,32 @@ use crate::app::{
     schemas::{req, Music, Musics, Translate},
 };
 use serde_json::from_value;
-use sqlx::{query, Error, Pool, Postgres};
+use sqlx::{postgres::PgRow, query, Error, Pool, Postgres};
 use sqlx::{types::Json, Row};
 use std::sync::Arc;
 
 pub async fn all(
     pool: Arc<Pool<Postgres>>,
+    status: bool,
     offset: i32,
     limit: i32,
 ) -> Result<Musics, Error> {
-    let rows = query(queries::music::ALL)
-        .bind(offset)
-        .bind(limit)
-        .fetch_all(&*pool)
-        .await?;
+    #[allow(unused)]
+    let mut rows: Vec<PgRow> = vec![];
+
+    if status {
+        rows = query(queries::music::ALL_FOR_ADMIN)
+            .bind(offset)
+            .bind(limit)
+            .fetch_all(&*pool)
+            .await?;
+    } else {
+        rows = query(queries::music::ALL)
+            .bind(offset)
+            .bind(limit)
+            .fetch_all(&*pool)
+            .await?;
+    }
 
     let musics = rows
         .iter()

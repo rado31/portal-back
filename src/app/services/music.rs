@@ -22,11 +22,17 @@ pub async fn all(req: Request<State>) -> Result<Response> {
         }
     };
     let pool = req.state().pool.clone();
+    //let _is_admin: bool = *req.ext().unwrap();
 
     query.page_to_offset();
 
-    match repositories::music::all(pool, query.page as i32, query.count as i32)
-        .await
+    match repositories::music::all(
+        pool,
+        true,
+        query.page as i32,
+        query.count as i32,
+    )
+    .await
     {
         Ok(musics) => {
             let response = Response::builder(200)

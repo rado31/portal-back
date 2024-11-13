@@ -1,9 +1,18 @@
+pub const ALL_FOR_ADMIN: &str = r#"
+    SELECT
+        m.id,
+        m.title,
+        m.path
+    FROM musics m
+    ORDER BY m.id DESC
+"#;
 pub const ALL: &str = r#"
     SELECT
         m.id,
         m.title,
         m.path
     FROM musics m
+    ORDER BY m.id
     OFFSET $1
     LIMIT $2
 "#;
