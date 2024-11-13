@@ -9,6 +9,25 @@ use async_std::{
 use serde_json::json;
 use tide::{http::mime::JSON, Request, Response, Result};
 
+pub async fn all_for_admin(req: Request<State>) -> Result<Response> {
+    let pool = req.state().pool.clone();
+
+    match repositories::book::all_for_admin(pool).await {
+        Ok(musics) => {
+            let response = Response::builder(200)
+                .body(json!(musics))
+                .content_type(JSON)
+                .build();
+
+            Ok(response)
+        }
+        Err(error) => {
+            log::error!("Get books for admin: {error}");
+            Ok(Response::new(500))
+        }
+    }
+}
+
 pub async fn all(req: Request<State>) -> Result<Response> {
     let mut query: req::PaginationQuery = match req.query() {
         Ok(val) => val,

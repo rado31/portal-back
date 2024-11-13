@@ -14,6 +14,25 @@ use std::{
 };
 use tide::{http::mime::JSON, log, Request, Response, Result};
 
+pub async fn all_for_admin(req: Request<State>) -> Result<Response> {
+    let pool = req.state().pool.clone();
+
+    match repositories::movie::all_for_admin(pool).await {
+        Ok(movies) => {
+            let response = Response::builder(200)
+                .body(json!(movies))
+                .content_type(JSON)
+                .build();
+
+            Ok(response)
+        }
+        Err(error) => {
+            log::error!("Get movies for admin: {error}");
+            Ok(Response::new(500))
+        }
+    }
+}
+
 pub async fn all(req: Request<State>) -> Result<Response> {
     let mut query: req::PaginationQuery = match req.query() {
         Ok(val) => val,
@@ -27,17 +46,11 @@ pub async fn all(req: Request<State>) -> Result<Response> {
         }
     };
     let pool = req.state().pool.clone();
-    //let _is_admin: bool = *req.ext().unwrap();
 
     query.page_to_offset();
 
-    match repositories::movie::all(
-        pool,
-        true, // TO-DO for release set to variable above "is_admin"
-        query.page as i32,
-        query.count as i32,
-    )
-    .await
+    match repositories::movie::all(pool, query.page as i32, query.count as i32)
+        .await
     {
         Ok(movies) => {
             let response = Response::builder(200)

@@ -7,6 +7,30 @@ use sqlx::{query, Error, Pool, Postgres};
 use sqlx::{types::Json, Row};
 use std::sync::Arc;
 
+pub async fn all_for_admin(
+    pool: Arc<Pool<Postgres>>,
+) -> Result<Vec<Book>, Error> {
+    let rows = query(queries::book::ALL_FOR_ADMIN)
+        .fetch_all(&*pool)
+        .await?;
+
+    let books = rows
+        .iter()
+        .map(|row| {
+            let v_title = row.get("title");
+            let title: Translate = from_value(v_title).unwrap();
+
+            Book {
+                id: row.get("id"),
+                title,
+                path: row.get("path"),
+            }
+        })
+        .collect();
+
+    Ok(books)
+}
+
 pub async fn all(
     pool: Arc<Pool<Postgres>>,
     offset: i32,

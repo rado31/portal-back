@@ -5,7 +5,30 @@ pub const ALL_FOR_ADMIN: &str = r#"
         m.description,
         m.duration,
         m.image,
-        m.status,
+        m.is_uploaded,
+        ARRAY(
+            SELECT
+                JSON_BUILD_OBJECT(
+                    'id', msc.sub_category_id,
+                    'title', (
+                        SELECT sc.title
+                        FROM sub_categories sc
+                        WHERE sc.id = msc.sub_category_id
+                    )
+                )::VARCHAR
+            FROM movies_sub_categories msc
+            WHERE msc.movie_id = m.id
+        ) AS sub_categories
+    FROM movies m
+    ORDER BY m.id desc
+"#;
+pub const ALL: &str = r#"
+    SELECT
+        m.id,
+        m.title,
+        m.description,
+        m.duration,
+        m.image,
         m.is_uploaded,
         ARRAY(
             SELECT
@@ -25,33 +48,9 @@ pub const ALL_FOR_ADMIN: &str = r#"
     OFFSET $1
     LIMIT $2
 "#;
-pub const ALL: &str = r#"
-    SELECT
-        m.id,
-        m.title,
-        m.description,
-        m.duration,
-        m.image,
-        m.status,
-        m.is_uploaded,
-        ARRAY(
-            SELECT
-                JSON_BUILD_OBJECT(
-                    'id', msc.sub_category_id,
-                    'title', (
-                        SELECT sc.title
-                        FROM sub_categories sc
-                        WHERE sc.id = msc.sub_category_id
-                    )
-                )::VARCHAR
-            FROM movie_sub_categories msc
-            WHERE msc.movie_id = m.id
-        ) AS sub_categories
+pub const TOTAL: &str = r#"
+    SELECT COUNT(m.id)::INTEGER AS total
     FROM movies m
-    WHERE m.status = true
-    ORDER BY m.id desc
-    OFFSET $1
-    LIMIT $2
 "#;
 pub const ONE: &str = r#"
     SELECT
@@ -60,7 +59,6 @@ pub const ONE: &str = r#"
         m.description,
         m.duration,
         m.image,
-        m.status,
         m.is_uploaded,
         ARRAY(
             SELECT
@@ -91,7 +89,6 @@ pub const ALL_BY_SC: &str = r#"
         m.description,
         m.duration,
         m.image,
-        m.status,
         m.is_uploaded,
         ARRAY(
             SELECT
@@ -119,7 +116,6 @@ pub const SEARCH: &str = r#"
         m.description,
         m.duration,
         m.image,
-        m.status,
         m.is_uploaded,
         ARRAY(
             SELECT

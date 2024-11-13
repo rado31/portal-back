@@ -228,6 +228,28 @@
 					"response": []
 				},
 				{
+					"name": "All for admin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/movies/admin",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"movies",
+								"admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "By ID",
 					"request": {
 						"method": "GET",
@@ -237,13 +259,13 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/movies/4",
+							"raw": "{{host}}/movies/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"movies",
-								"4"
+								"1"
 							]
 						}
 					},
@@ -557,6 +579,28 @@
 					"response": []
 				},
 				{
+					"name": "All for admin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/musics/admin",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"musics",
+								"admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "By ID",
 					"request": {
 						"method": "GET",
@@ -709,6 +753,28 @@
 									"key": "count",
 									"value": "10"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All for admin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/books/admin",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"books",
+								"admin"
 							]
 						}
 					},
@@ -873,13 +939,13 @@
 	],
 	"variable": [
 		{
-			"id": "1645eef2-6fa3-4f54-b233-f9422e700503",
+			"id": "831b0ced-e818-4cb2-92c4-3be6f005444e",
 			"key": "host",
 			"value": "172.31.13.14:8080",
 			"type": "string"
 		},
 		{
-			"id": "cb5dd394-66fb-4c53-8e56-50aaf20b123f",
+			"id": "fdb030e5-6150-4140-b58d-e8e184a0c43c",
 			"key": "public",
 			"value": "213.130.144.154",
 			"type": "string"

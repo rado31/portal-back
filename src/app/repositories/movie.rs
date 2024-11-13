@@ -3,34 +3,17 @@ use crate::app::schemas::{
 };
 use crate::app::{queries, schemas::Movie};
 use serde_json::{from_str, from_value};
-use sqlx::postgres::PgRow;
 use sqlx::types::Json;
 use sqlx::Row;
 use sqlx::{query, Error, Pool, Postgres};
 use std::sync::Arc;
 
-pub async fn all(
+pub async fn all_for_admin(
     pool: Arc<Pool<Postgres>>,
-    status: bool,
-    offset: i32,
-    limit: i32,
 ) -> Result<Vec<Movie>, Error> {
-    #[allow(unused)]
-    let mut rows: Vec<PgRow> = vec![];
-
-    if status {
-        rows = query(queries::movie::ALL_FOR_ADMIN)
-            .bind(offset)
-            .bind(limit)
-            .fetch_all(&*pool)
-            .await?;
-    } else {
-        rows = query(queries::movie::ALL)
-            .bind(offset)
-            .bind(limit)
-            .fetch_all(&*pool)
-            .await?;
-    }
+    let rows = query(queries::movie::ALL_FOR_ADMIN)
+        .fetch_all(&*pool)
+        .await?;
 
     let movies = rows
         .iter()
@@ -52,7 +35,6 @@ pub async fn all(
                 description,
                 duration: row.get("duration"),
                 image: row.get("image"),
-                status: row.get("status"),
                 is_uploaded: row.get("is_uploaded"),
                 sub_categories: sc,
             }
@@ -60,6 +42,53 @@ pub async fn all(
         .collect();
 
     Ok(movies)
+}
+
+pub async fn all(
+    pool: Arc<Pool<Postgres>>,
+    offset: i32,
+    limit: i32,
+) -> Result<Movies, Error> {
+    let rows = query(queries::movie::ALL)
+        .bind(offset)
+        .bind(limit)
+        .fetch_all(&*pool)
+        .await?;
+
+    let movies = rows
+        .iter()
+        .map(|row| {
+            let v_title = row.get("title");
+            let title: Translate = from_value(v_title).unwrap();
+
+            let v_description = row.get("description");
+            let description: Translate =
+                serde_json::from_value(v_description).unwrap();
+
+            let v_sc: Vec<String> = row.get("sub_categories");
+            let sc: Vec<SubCategory> =
+                v_sc.iter().map(|str| from_str(str).unwrap()).collect();
+
+            Movie {
+                id: row.get("id"),
+                title,
+                description,
+                duration: row.get("duration"),
+                image: row.get("image"),
+                is_uploaded: row.get("is_uploaded"),
+                sub_categories: sc,
+            }
+        })
+        .collect();
+
+    let row = query(queries::movie::TOTAL).fetch_one(&*pool).await?;
+
+    let res = Movies {
+        total: row.get("total"),
+        movies,
+    };
+
+    Ok(res)
 }
 
 pub async fn one(
@@ -87,7 +116,6 @@ pub async fn one(
         description,
         duration: row.get("duration"),
         image: row.get("image"),
-        status: row.get("status"),
         is_uploaded: row.get("is_uploaded"),
         sub_categories: sc,
     };
@@ -128,7 +156,6 @@ pub async fn all_by_sc(
                 description,
                 duration: row.get("duration"),
                 image: row.get("image"),
-                status: row.get("status"),
                 is_uploaded: row.get("is_uploaded"),
                 sub_categories: sc,
             }
@@ -203,7 +230,6 @@ pub async fn search(
                 description,
                 duration: row.get("duration"),
                 image: row.get("image"),
-                status: row.get("status"),
                 is_uploaded: row.get("is_uploaded"),
                 sub_categories: sc,
             }
@@ -271,7 +297,6 @@ pub async fn update(
         .bind(Json(body.title))
         .bind(Json(body.description))
         .bind(body.duration as i32)
-        .bind(body.status)
         .bind(body.id as i32)
         .execute(&*pool)
         .await?;

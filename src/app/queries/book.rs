@@ -1,9 +1,18 @@
+pub const ALL_FOR_ADMIN: &str = r#"
+    SELECT
+        b.id,
+        b.title,
+        b.path
+    FROM books b
+    ORDER BY b.id
+"#;
 pub const ALL: &str = r#"
     SELECT
         b.id,
         b.title,
         b.path
     FROM books b
+    ORDER BY b.id
     OFFSET $1
     LIMIT $2
 "#;

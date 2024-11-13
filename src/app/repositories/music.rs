@@ -3,32 +3,44 @@ use crate::app::{
     schemas::{req, Music, Musics, Translate},
 };
 use serde_json::from_value;
-use sqlx::{postgres::PgRow, query, Error, Pool, Postgres};
+use sqlx::{query, Error, Pool, Postgres};
 use sqlx::{types::Json, Row};
 use std::sync::Arc;
 
+pub async fn all_for_admin(
+    pool: Arc<Pool<Postgres>>,
+) -> Result<Vec<Music>, Error> {
+    let rows = query(queries::music::ALL_FOR_ADMIN)
+        .fetch_all(&*pool)
+        .await?;
+
+    let musics = rows
+        .iter()
+        .map(|row| {
+            let v_title = row.get("title");
+            let title: Translate = from_value(v_title).unwrap();
+
+            Music {
+                id: row.get("id"),
+                title,
+                path: row.get("path"),
+            }
+        })
+        .collect();
+
+    Ok(musics)
+}
+
 pub async fn all(
     pool: Arc<Pool<Postgres>>,
-    status: bool,
     offset: i32,
     limit: i32,
 ) -> Result<Musics, Error> {
-    #[allow(unused)]
-    let mut rows: Vec<PgRow> = vec![];
-
-    if status {
-        rows = query(queries::music::ALL_FOR_ADMIN)
-            .bind(offset)
-            .bind(limit)
-            .fetch_all(&*pool)
-            .await?;
-    } else {
-        rows = query(queries::music::ALL)
-            .bind(offset)
-            .bind(limit)
-            .fetch_all(&*pool)
-            .await?;
-    }
+    let rows = query(queries::music::ALL)
+        .bind(offset)
+        .bind(limit)
+        .fetch_all(&*pool)
+        .await?;
 
     let musics = rows
         .iter()

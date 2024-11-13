@@ -14,7 +14,6 @@ pub struct Movie {
     pub description: Translate,
     pub duration: i32,
     pub image: Option<String>,
-    pub status: bool,
     pub is_uploaded: bool,
     pub sub_categories: Vec<SubCategory>,
 }

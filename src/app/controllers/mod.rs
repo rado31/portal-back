@@ -31,6 +31,7 @@ pub fn movie(state: State) -> tide::Server<State> {
         .get(services::movie::all)
         .post(services::movie::create)
         .put(services::movie::update);
+    api.at("/admin").get(services::movie::all_for_admin);
     api.at("/:id")
         .get(services::movie::one)
         .post(services::movie::upload)
@@ -53,6 +54,7 @@ pub fn music(state: State) -> tide::Server<State> {
         .get(services::music::all)
         .post(services::music::create)
         .put(services::music::update);
+    api.at("/admin").get(services::music::all_for_admin);
     api.at("/:id")
         .get(services::music::one)
         .post(services::music::upload)
@@ -68,6 +70,7 @@ pub fn book(state: State) -> tide::Server<State> {
         .get(services::book::all)
         .post(services::book::create)
         .put(services::book::update);
+    api.at("/admin").get(services::book::all_for_admin);
     api.at("/:id")
         .get(services::book::one)
         .post(services::book::upload)

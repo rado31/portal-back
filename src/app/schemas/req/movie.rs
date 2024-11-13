@@ -15,6 +15,5 @@ pub struct Update {
     pub title: Translate,
     pub description: Translate,
     pub duration: u32,
-    pub status: bool,
     pub sub_categories: Vec<u32>,
 }

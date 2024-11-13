@@ -26,7 +26,6 @@ CREATE TABLE movies (
 	description JSONB NOT NULL,
 	duration INTEGER NOT NULL,
 	image VARCHAR NULL,
-	status BOOLEAN DEFAULT true,
 	is_uploaded BOOLEAN DEFAULT false,
 	category_id INTEGER DEFAULT 1,
 
