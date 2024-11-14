@@ -1,4 +1,4 @@
-use super::services;
+use super::{middlewares, services};
 use crate::config::State;
 
 pub fn auth(state: State) -> tide::Server<State> {
@@ -10,9 +10,9 @@ pub fn auth(state: State) -> tide::Server<State> {
 }
 
 pub fn category(state: State) -> tide::Server<State> {
-    let mut api = tide::with_state(state);
+    let mut api = tide::with_state(state.clone());
 
-    //api.with(middlewares::JwtMiddleware::new(state.key));
+    api.with(middlewares::JwtMiddleware::new(state.key));
     api.at("/:id/sub").get(services::category::all);
     api.at("/sub/:id")
         .get(services::category::one)
@@ -25,8 +25,9 @@ pub fn category(state: State) -> tide::Server<State> {
 }
 
 pub fn movie(state: State) -> tide::Server<State> {
-    let mut api = tide::with_state(state);
+    let mut api = tide::with_state(state.clone());
 
+    api.with(middlewares::JwtMiddleware::new(state.key));
     api.at("/")
         .get(services::movie::all)
         .post(services::movie::create)
@@ -48,8 +49,9 @@ pub fn movie(state: State) -> tide::Server<State> {
 }
 
 pub fn music(state: State) -> tide::Server<State> {
-    let mut api = tide::with_state(state);
+    let mut api = tide::with_state(state.clone());
 
+    api.with(middlewares::JwtMiddleware::new(state.key));
     api.at("/")
         .get(services::music::all)
         .post(services::music::create)
@@ -64,8 +66,9 @@ pub fn music(state: State) -> tide::Server<State> {
 }
 
 pub fn book(state: State) -> tide::Server<State> {
-    let mut api = tide::with_state(state);
+    let mut api = tide::with_state(state.clone());
 
+    api.with(middlewares::JwtMiddleware::new(state.key));
     api.at("/")
         .get(services::book::all)
         .post(services::book::create)

@@ -1,7 +1,7 @@
 use crate::{
     app::{repositories, schemas::Admin},
     config::State,
-    utils::create_token,
+    utils::{check_media_password, create_token},
 };
 use serde_json::json;
 use tide::{http::mime::JSON, Request, Response, Result};
@@ -43,6 +43,14 @@ pub async fn sign_in(mut req: Request<State>) -> Result<Response> {
         }
     }
 
-    // TO-DO login for passenger
-    Ok(Response::new(200))
+    if !check_media_password(body.login, body.password, "") {
+        return Ok(Response::new(400));
+    }
+
+    let response = Response::builder(200)
+        .body(json!({ "token": create_token(false, exp, &key) }))
+        .content_type(JSON)
+        .build();
+
+    Ok(response)
 }

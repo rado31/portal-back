@@ -12,6 +12,7 @@ async fn main() -> tide::Result<()> {
         setting.auth.access_key,
         setting.auth.access_time,
         setting.app.upload_path,
+        setting.app.media_password,
     )
     .await;
 

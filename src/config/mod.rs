@@ -17,6 +17,7 @@ pub struct Settings {
 pub struct App {
     pub url: String,
     pub upload_path: String,
+    pub media_password: String,
     pub release: bool,
 }
 

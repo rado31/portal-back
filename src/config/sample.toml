@@ -1,6 +1,7 @@
 [app]
 url = "host:port"
 upload_path = "./uploads"
+media_password = ""
 release = false
 
 [database]

@@ -39,7 +39,7 @@ impl<State: Clone + Send + Sync + 'static> Middleware<State> for JwtMiddleware {
                         req.set_ext(decoded_value.claims.is_admin);
                         return Ok(next.run(req).await);
                     }
-                    Err(_) => (),
+                    Err(_) => return Ok(Response::new(403)),
                 };
             }
         }

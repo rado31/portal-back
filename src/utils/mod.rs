@@ -1,6 +1,6 @@
 use crate::config::State;
 use async_std::{fs::OpenOptions, io};
-use chrono::{Duration, Local, Utc};
+use chrono::{Days, Duration, FixedOffset, Local, Utc};
 use fern::Dispatch;
 use jsonwebtoken::{
     decode, encode, errors::Result as JwtResult, Algorithm, DecodingKey,
@@ -101,4 +101,38 @@ pub fn count_total_frames(path: &str) -> i32 {
         .trim()
         .parse()
         .unwrap()
+}
+
+pub fn check_media_password(
+    booking_number: String,
+    password: String,
+    secret_key: &str,
+) -> bool {
+    let pass_len = password.len();
+    let last_digit = password.get(pass_len..).unwrap();
+
+    for i in 0..2 {
+        let timezone = FixedOffset::east_opt(5 * 3600).unwrap();
+        let departure_time = Utc::now()
+            .with_timezone(&timezone)
+            .checked_add_days(Days::new(i))
+            .unwrap()
+            .to_string();
+
+        let data =
+            format!("{booking_number}{last_digit}{departure_time}{secret_key}");
+
+        let result = format!("{:x}", md5::compute(data));
+        let re = regex::Regex::new(r"\D").unwrap();
+        let cleaned = re.replace_all(&result, "").to_string();
+
+        let mut pin: String = cleaned.chars().take(5).collect();
+        pin += last_digit;
+
+        if pin == password {
+            return true;
+        }
+    }
+
+    false
 }
