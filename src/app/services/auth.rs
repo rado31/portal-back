@@ -43,7 +43,8 @@ pub async fn sign_in(mut req: Request<State>) -> Result<Response> {
         }
     }
 
-    if !check_media_password(body.login, body.password, "") {
+    let secret_key = req.state().media_password.clone();
+    if !check_media_password(body.login, body.password, secret_key) {
         return Ok(Response::new(400));
     }
 

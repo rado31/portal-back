@@ -106,18 +106,21 @@ pub fn count_total_frames(path: &str) -> i32 {
 pub fn check_media_password(
     booking_number: String,
     password: String,
-    secret_key: &str,
+    secret_key: String,
 ) -> bool {
     let pass_len = password.len();
-    let last_digit = password.get(pass_len..).unwrap();
+    let last_digit = password.get((pass_len - 1)..).unwrap();
 
     for i in 0..2 {
         let timezone = FixedOffset::east_opt(5 * 3600).unwrap();
-        let departure_time = Utc::now()
+        let departure_time: String = Utc::now()
             .with_timezone(&timezone)
             .checked_add_days(Days::new(i))
             .unwrap()
-            .to_string();
+            .to_string()
+            .chars()
+            .take(10)
+            .collect();
 
         let data =
             format!("{booking_number}{last_digit}{departure_time}{secret_key}");
