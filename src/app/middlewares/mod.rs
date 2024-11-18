@@ -30,6 +30,10 @@ impl<State: Clone + Send + Sync + 'static> Middleware<State> for JwtMiddleware {
         mut req: Request<State>,
         next: Next<'_, State>,
     ) -> tide::Result {
+        if req.url().path().starts_with("/fraction") {
+            return Ok(next.run(req).await);
+        };
+
         let auth_header = req.header("Authorization").map(|h| h.as_str());
 
         if let Some(auth_header) = auth_header {
