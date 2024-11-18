@@ -272,6 +272,10 @@ pub async fn upload(req: Request<State>) -> Result<Response> {
     let upload_path = req.state().upload_path.clone();
     let folder = format!("{upload_path}/movies/{movie_id}");
 
+    if let Ok(_) = fs::metadata(format!("{folder}/movie.mp4")).await {
+        return Ok(Response::new(418));
+    };
+
     if let Err(error) = fs::create_dir(&folder).await {
         if error.kind() != io::ErrorKind::AlreadyExists {
             log::error!("Folder creation for movie: {error}");
