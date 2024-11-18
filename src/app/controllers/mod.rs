@@ -27,6 +27,8 @@ pub fn category(state: State) -> tide::Server<State> {
 pub fn movie(state: State) -> tide::Server<State> {
     let mut api = tide::with_state(state.clone());
 
+    api.at("/fraction/:id")
+        .get(tide::sse::endpoint(services::movie::fraction));
     api.with(middlewares::JwtMiddleware::new(state.key));
     api.at("/")
         .get(services::movie::all)
@@ -40,8 +42,6 @@ pub fn movie(state: State) -> tide::Server<State> {
     api.at("/sub/:id").get(services::movie::all_by_sc);
     api.at("/main-page").get(services::movie::main_page);
     api.at("/video/:id").get(services::movie::serve);
-    api.at("/fraction/:id")
-        .get(tide::sse::endpoint(services::movie::fraction));
     api.at("/image/:id").post(services::movie::upload_image);
     api.at("/search/:text").get(services::movie::search);
 
