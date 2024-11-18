@@ -153,8 +153,8 @@ pub const UPDATE_IMAGE_PATH: &str = r#"
     UPDATE movies SET image = $1 WHERE id = $2
 "#;
 pub const UPDATE: &str = r#"
-    UPDATE movies SET title = $1, description = $2, duration = $3, status = $4
-    WHERE id = $5
+    UPDATE movies SET title = $1, description = $2, duration = $3
+    WHERE id = $4
 "#;
 pub const UPDATE_UPLOADED_STATUS: &str = r#"
     UPDATE movies SET is_uploaded = true WHERE id = $1
