@@ -7,7 +7,11 @@ use jsonwebtoken::{
     EncodingKey, Header, TokenData, Validation,
 };
 use serde::{Deserialize, Serialize};
-use std::process::{Command, Stdio};
+use std::{
+    fs,
+    path::Path,
+    process::{Command, Stdio},
+};
 use tide::Request;
 
 #[derive(Serialize, Deserialize)]
@@ -146,4 +150,16 @@ pub fn dump_db(db_uri: &str, path: &str) -> bool {
         .status()
         .unwrap()
         .success()
+}
+
+pub fn copy_folder(src: &Path, dst: &Path) -> io::Result<()> {
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let path = entry.path();
+        let dest_path = dst.join(entry.file_name());
+
+        fs::copy(&path, &dest_path)?;
+    }
+
+    Ok(())
 }
