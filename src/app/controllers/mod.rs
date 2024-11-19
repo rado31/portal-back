@@ -81,3 +81,12 @@ pub fn book(state: State) -> tide::Server<State> {
 
     api
 }
+
+pub fn dump(state: State) -> tide::Server<State> {
+    let mut api = tide::with_state(state.clone());
+
+    api.with(middlewares::JwtMiddleware::new(state.key));
+    api.at("/").post(services::dump::create);
+
+    api
+}

@@ -139,3 +139,11 @@ pub fn check_media_password(
 
     false
 }
+
+pub fn dump_db(db_uri: &str, path: &str) -> bool {
+    Command::new("pg_dump")
+        .args(["-d", db_uri, "-f", path])
+        .status()
+        .unwrap()
+        .success()
+}

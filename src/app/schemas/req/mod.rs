@@ -23,3 +23,8 @@ impl Default for PaginationQuery {
         Self { page: 1, count: 10 }
     }
 }
+
+#[derive(Deserialize)]
+pub struct DumpBody {
+    pub folder: String,
+}

@@ -19,6 +19,7 @@ pub fn init_app(state: State) -> tide::Server<()> {
     app.at("/movies").nest(controllers::movie(state.clone()));
     app.at("/musics").nest(controllers::music(state.clone()));
     app.at("/books").nest(controllers::book(state.clone()));
+    app.at("/dump").nest(controllers::dump(state.clone()));
     app.at("/uploads").serve_dir("uploads").unwrap();
 
     app
