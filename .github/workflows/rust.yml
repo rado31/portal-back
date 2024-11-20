@@ -13,6 +13,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --release
+      - uses: actions/checkout@v4
+      - name: Build
+        run: cargo build --release
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
