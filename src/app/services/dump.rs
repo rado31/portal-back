@@ -1,7 +1,7 @@
 use crate::{
     app::schemas::{req, ChangesJSON, DeletedFilesJSON},
     config::State,
-    utils::{copy_folder, dump_db},
+    utils::{copy_folder, dump_db, get_changes_json, set_changes_json},
 };
 use serde_json::json;
 use std::{
@@ -52,22 +52,7 @@ pub async fn create(mut req: Request<State>) -> Result<Response> {
     }
 
     // 4. read changes.json and copy files to own folders
-    let file = match fs::File::open("changes.json") {
-        Ok(f) => f,
-        Err(error) => {
-            log::error!("Read changes.json file: {error}");
-            return Ok(Response::new(500));
-        }
-    };
-    let reader = io::BufReader::new(file);
-    let json_file: ChangesJSON = match serde_json::from_reader(reader) {
-        Ok(f) => f,
-        Err(error) => {
-            log::error!("Serde changes.json file: {error}");
-            return Ok(Response::new(500));
-        }
-    };
-
+    let json_file = get_changes_json();
     let upload_path = req.state().upload_path.clone();
 
     for id in json_file.movies {
@@ -85,34 +70,20 @@ pub async fn create(mut req: Request<State>) -> Result<Response> {
         }
     }
 
-    for id in json_file.musics {
-        if let Err(error) = fs::create_dir(format!("{folder}/musics/{id}")) {
-            log::error!("Create music id folder: {error}");
-            return Ok(Response::new(500));
-        }
-
-        if let Err(error) = copy_folder(
-            Path::new(&format!("{upload_path}/musics/{id}")),
-            Path::new(&format!("{folder}/musics/{id}")),
-        ) {
-            log::error!("Copy music: {error}");
-            return Ok(Response::new(500));
-        }
+    if let Err(error) = copy_folder(
+        Path::new(&format!("{upload_path}/musics")),
+        Path::new(&format!("{folder}/musics")),
+    ) {
+        log::error!("Copy music: {error}");
+        return Ok(Response::new(500));
     }
 
-    for id in json_file.books {
-        if let Err(error) = fs::create_dir(format!("{folder}/books/{id}")) {
-            log::error!("Create book id folder: {error}");
-            return Ok(Response::new(500));
-        }
-
-        if let Err(error) = copy_folder(
-            Path::new(&format!("{upload_path}/books/{id}")),
-            Path::new(&format!("{folder}/books/{id}")),
-        ) {
-            log::error!("Copy book: {error}");
-            return Ok(Response::new(500));
-        }
+    if let Err(error) = copy_folder(
+        Path::new(&format!("{upload_path}/books")),
+        Path::new(&format!("{folder}/books")),
+    ) {
+        log::error!("Copy book: {error}");
+        return Ok(Response::new(500));
     }
 
     // 5. create 'delete_files.json' and save it in 'changes' folder
@@ -133,9 +104,7 @@ pub async fn create(mut req: Request<State>) -> Result<Response> {
         },
     };
 
-    let json_string = serde_json::to_string_pretty(&changes).unwrap();
-    let mut file = fs::File::create("changes.json").unwrap();
-    file.write_all(json_string.as_bytes()).unwrap();
+    set_changes_json(&changes);
 
     Ok(Response::new(201))
 }

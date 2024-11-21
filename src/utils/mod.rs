@@ -1,4 +1,4 @@
-use crate::config::State;
+use crate::{app::schemas::ChangesJSON, config::State};
 use async_std::{fs::OpenOptions, io};
 use chrono::{Days, Duration, FixedOffset, Local, Utc};
 use fern::Dispatch;
@@ -9,6 +9,7 @@ use jsonwebtoken::{
 use serde::{Deserialize, Serialize};
 use std::{
     fs,
+    io::Write,
     path::Path,
     process::{Command, Stdio},
 };
@@ -162,4 +163,16 @@ pub fn copy_folder(src: &Path, dst: &Path) -> io::Result<()> {
     }
 
     Ok(())
+}
+
+pub fn get_changes_json() -> ChangesJSON {
+    let file = std::fs::File::open("changes.json").unwrap();
+    let reader = std::io::BufReader::new(file);
+    serde_json::from_reader(reader).unwrap()
+}
+
+pub fn set_changes_json(file: &ChangesJSON) {
+    let json_string = serde_json::to_string_pretty(file).unwrap();
+    let mut file = std::fs::File::create("changes.json").unwrap();
+    file.write_all(json_string.as_bytes()).unwrap();
 }

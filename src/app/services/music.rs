@@ -1,6 +1,7 @@
 use crate::{
     app::{repositories, schemas::req},
     config::State,
+    utils::{get_changes_json, set_changes_json},
 };
 use async_std::{
     fs::{self, OpenOptions},
@@ -158,6 +159,15 @@ pub async fn upload(req: Request<State>) -> Result<Response> {
     }
 
     transaction.commit().await.unwrap();
+
+    let mut json_file = get_changes_json();
+
+    if !json_file.music_id_exists(music_id as i32) {
+        json_file.musics.push(music_id as i32);
+    };
+
+    set_changes_json(&json_file);
+
     Ok(Response::new(200))
 }
 
@@ -211,6 +221,14 @@ pub async fn delete(req: Request<State>) -> Result<Response> {
             {
                 log::error!("Remove music: {error}");
             }
+
+            // write to changes.json
+            let mut json_file = get_changes_json();
+
+            json_file.deleted.musics.push(music_id as i32);
+            json_file.remove_music(music_id as i32);
+
+            set_changes_json(&json_file);
 
             Ok(Response::new(200))
         }

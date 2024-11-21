@@ -1,7 +1,9 @@
 use crate::{
     app::{repositories, schemas::req},
     config::State,
-    utils::{count_total_frames, save_file},
+    utils::{
+        count_total_frames, get_changes_json, save_file, set_changes_json,
+    },
 };
 use async_std::{
     fs::{self, OpenOptions},
@@ -401,6 +403,15 @@ pub async fn fraction(
         log::error!("Update upload status: {error}");
     }
 
+    // write to changes.json
+    let mut json_file = get_changes_json();
+
+    if !json_file.movie_id_exists(movie_id as i32) {
+        json_file.movies.push(movie_id as i32);
+    };
+
+    set_changes_json(&json_file);
+
     Ok(())
 }
 
@@ -466,6 +477,14 @@ pub async fn delete(req: Request<State>) -> Result<Response> {
             {
                 log::error!("Remove movie's image: {error}");
             }
+
+            // write to changes.json
+            let mut json_file = get_changes_json();
+
+            json_file.deleted.movies.push(movie_id as i32);
+            json_file.remove_movie(movie_id as i32);
+
+            set_changes_json(&json_file);
 
             Ok(Response::new(200))
         }

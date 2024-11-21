@@ -25,3 +25,38 @@ pub struct DeletedFilesJSON {
     pub musics: Vec<i32>,
     pub books: Vec<i32>,
 }
+
+impl ChangesJSON {
+    pub fn movie_id_exists(&self, id: i32) -> bool {
+        match &self.movies.iter().find(|number| **number == id) {
+            Some(_) => true,
+            None => false,
+        }
+    }
+
+    pub fn remove_movie(&mut self, id: i32) {
+        self.movies.retain(|movie| *movie != id);
+    }
+
+    pub fn music_id_exists(&self, id: i32) -> bool {
+        match &self.musics.iter().find(|number| **number == id) {
+            Some(_) => true,
+            None => false,
+        }
+    }
+
+    pub fn remove_music(&mut self, id: i32) {
+        self.musics.retain(|music| *music != id);
+    }
+
+    pub fn book_id_exists(&self, id: i32) -> bool {
+        match &self.books.iter().find(|number| **number == id) {
+            Some(_) => true,
+            None => false,
+        }
+    }
+
+    pub fn remove_book(&mut self, id: i32) {
+        self.books.retain(|book| *book != id);
+    }
+}

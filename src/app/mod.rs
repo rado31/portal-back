@@ -2,7 +2,7 @@ mod controllers;
 mod middlewares;
 mod queries;
 mod repositories;
-mod schemas;
+pub mod schemas;
 mod services;
 
 use crate::config::State;
