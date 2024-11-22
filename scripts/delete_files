@@ -1,9 +1,26 @@
+#!/bin/bash
+
 delete_files() {
 	MOVIES=$(jq -r '.movies | join(",")' "$JSON_FILE")
 	MUSICS=$(jq -r '.musics | join(",")' "$JSON_FILE")
 	BOOKS=$(jq -r '.books | join(",")' "$JSON_FILE")
+	IMAGES=$(jq -r '.images | join(",")' "$JSON_FILE")
 
-	eval rm -rf "$TARGET_PATH/movies/{$MOVIES}"
-	eval rm "$TARGET_PATH/musics/{$MUSICS}*"
-	eval rm "$TARGET_PATH/books/{$BOOKS}*"
+	# check that variable is not empty, then remove
+
+	if [ -n "$MOVIES" ]; then
+		eval rm -rf "$TARGET_PATH/movies/{$MOVIES}"
+	fi
+
+	if [ -n "$MUSICS" ]; then
+		eval rm "$TARGET_PATH/musics/{$MUSICS}.mp3"
+	fi
+
+	if [ -n "$BOOKS" ]; then
+		eval rm "$TARGET_PATH/books/{$BOOKS}.pdf"
+	fi
+
+	if [ -n "$IMAGES" ]; then
+		eval rm "$TARGET_PATH/images/movies/{$IMAGES}.jpg"
+	fi
 }

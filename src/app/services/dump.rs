@@ -44,7 +44,7 @@ pub async fn create(mut req: Request<State>) -> Result<Response> {
     };
 
     // 3. create 'static' folder (for movies, musics, books)
-    for path in ["movies", "musics", "books"] {
+    for path in ["movies", "musics", "books", "images"] {
         if let Err(error) = fs::create_dir(format!("{folder}/{path}")) {
             log::error!("Create {path} folder: {error}");
             return Ok(Response::new(500));
@@ -90,6 +90,16 @@ pub async fn create(mut req: Request<State>) -> Result<Response> {
         }
     }
 
+    for id in json_file.images {
+        if let Err(error) = fs::copy(
+            format!("{upload_path}/images/movies/{id}.jpg"),
+            format!("{folder}/images/{id}.jpg"),
+        ) {
+            log::error!("Copy image: {error}");
+            return Ok(Response::new(500));
+        }
+    }
+
     // 5. create 'delete_files.json' and save it in 'changes' folder
     let json_string = serde_json::to_string_pretty(&json_file.deleted).unwrap();
     let mut file =
@@ -101,10 +111,12 @@ pub async fn create(mut req: Request<State>) -> Result<Response> {
         movies: vec![],
         musics: vec![],
         books: vec![],
+        images: vec![],
         deleted: DeletedFilesJSON {
             movies: vec![],
             musics: vec![],
             books: vec![],
+            images: vec![],
         },
     };
 

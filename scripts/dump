@@ -7,7 +7,15 @@ dump() {
 	fi
 
 	echo "Restoring database $DB_NAME from $SQL_DUMP_FILE..."
-	if ! psql -U postgres -d "$DB_NAME" -f "$SQL_DUMP_FILE" > /dev/null 2>&1; then
+	if ! psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME"; then
+		error_exit "Failed to drop database $DB_NAME"
+	fi
+
+	if ! psql -U postgres -d postgres -c "CREATE DATABASE $DB_NAME"; then
+		error_exit "Failed to create database $DB_NAME"
+	fi
+
+	if ! psql -U postgres -d "$DB_NAME" -f "$SQL_DUMP_FILE" > /dev/null; then
 		error_exit "Failed to restore database $DB_NAME from $SQL_DUMP_FILE"
 	fi
 

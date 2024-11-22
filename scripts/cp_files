@@ -1,5 +1,15 @@
+#!/bin/bash
+
 cp_files() {
-	eval rsync -ah --info=progress2 "$SOURCE_PATH/changes/movies/*" "$TARGET_PATH/movies"
-	eval rsync -ah --info=progress2 "$SOURCE_PATH/changes/musics/*" "$TARGET_PATH/musics"
-	eval rsync -ah --info=progress2 "$SOURCE_PATH/changes/books/*" "$TARGET_PATH/books"
+	# first check that folder is not empty and then copy
+	
+	for folder in movies musics books images; do
+		if [ -n "$(ls -A $SOURCE_PATH/changes/$folder)" ]; then
+			eval rsync -ah --info=progress2 "$SOURCE_PATH/changes/$folder/*" "$TARGET_PATH/$folder"
+		fi
+	done
+
+	if [ -n "$(ls -A $SOURCE_PATH/changes/images)" ]; then
+		eval rsync -ah --info=progress2 "$SOURCE_PATH/changes/images/*" "$TARGET_PATH/images/movies"
+	fi
 }

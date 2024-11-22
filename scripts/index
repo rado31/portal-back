@@ -1,8 +1,8 @@
 #!/bin/bash
 
-DEFAULT_PATH="/home/rado/media"
+DEVICE="/dev/sdb1"
 # Use the provided argument or default to the default path
-SOURCE_PATH="${1:-$DEFAULT_PATH}"
+SOURCE_PATH="/home/rado/media"
 TARGET_PATH="/var/www/media/uploads"
 SERVICE_NAME="media.service"
 DB_NAME="media"
@@ -18,6 +18,10 @@ error_exit() {
 source ./cp_files
 source ./dump
 source ./delete_files
+
+echo "Mounting device $DEVICE"
+mount $DEVICE $SOURCE_PATH
+echo "$DEVICE has been mounted"
 
 cp_files
 dump

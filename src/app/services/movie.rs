@@ -252,6 +252,16 @@ pub async fn upload_image(req: Request<State>) -> Result<Response> {
     }
 
     transaction.commit().await.unwrap();
+
+    // write to changes.json
+    let mut json_file = get_changes_json();
+
+    if !json_file.image_id_exists(movie_id as i32) {
+        json_file.images.push(movie_id as i32);
+    };
+
+    set_changes_json(&json_file);
+
     Ok(Response::new(200))
 }
 
@@ -482,7 +492,9 @@ pub async fn delete(req: Request<State>) -> Result<Response> {
             let mut json_file = get_changes_json();
 
             json_file.deleted.movies.push(movie_id as i32);
+            json_file.deleted.images.push(movie_id as i32);
             json_file.remove_movie(movie_id as i32);
+            json_file.remove_image(movie_id as i32);
 
             set_changes_json(&json_file);
 
