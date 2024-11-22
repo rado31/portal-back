@@ -1,7 +1,8 @@
 #!/bin/bash
 
-DEVICE="/dev/sdb1"
-# Use the provided argument or default to the default path
+DEFAULT_DEVICE="/dev/sdb1"
+
+DEVICE="${1:-$DEFAULT_DEVICE}"
 SOURCE_PATH="/home/rado/media"
 TARGET_PATH="/var/www/media/uploads"
 SERVICE_NAME="media.service"
@@ -11,7 +12,7 @@ JSON_FILE="$SOURCE_PATH/changes/delete_files.json"
 
 # Function to handle errors
 error_exit() {
-    echo "Error: $1" >&2
+    echo -e "\nError: $1" >&2
     exit 1
 }
 
@@ -19,12 +20,19 @@ source ./cp_files
 source ./dump
 source ./delete_files
 
-echo "Mounting device $DEVICE"
-mount $DEVICE $SOURCE_PATH
-echo "$DEVICE has been mounted"
+echo -e "\nMounting device $DEVICE"
+
+if ! mount $DEVICE $SOURCE_PATH; then
+    error_exit "Couldn't mount $DEVICE"
+fi
+
+echo -e "$DEVICE has been mounted\n"
 
 cp_files
 dump
 delete_files
 
-echo "Successfully done"
+echo -e "\nSuccessfully done"
+echo -e "\nUnmounting $DEVICE..."
+umount $SOURCE_PATH
+echo "Done"

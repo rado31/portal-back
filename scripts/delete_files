@@ -9,18 +9,34 @@ delete_files() {
 	# check that variable is not empty, then remove
 
 	if [ -n "$MOVIES" ]; then
-		eval rm -rf "$TARGET_PATH/movies/{$MOVIES}"
+		if [[ $variable == *,* ]]; then
+			eval rm -rf "$TARGET_PATH/movies/{$MOVIES}"
+		else
+			eval rm -rf "$TARGET_PATH/movies/$MOVIES"
+		fi
 	fi
 
 	if [ -n "$MUSICS" ]; then
-		eval rm "$TARGET_PATH/musics/{$MUSICS}.mp3"
+		if [[ $variable == *,* ]]; then
+			eval rm "$TARGET_PATH/musics/{$MUSICS}.mp3"
+		else
+			eval rm -rf "$TARGET_PATH/musics/$MUSICS.mp3"
+		fi
 	fi
 
 	if [ -n "$BOOKS" ]; then
-		eval rm "$TARGET_PATH/books/{$BOOKS}.pdf"
+		if [[ $variable == *,* ]]; then
+			eval rm "$TARGET_PATH/books/{$BOOKS}.pdf"
+		else
+			eval rm -rf "$TARGET_PATH/books/$BOOKS.pdf"
+		fi
 	fi
 
 	if [ -n "$IMAGES" ]; then
-		eval rm "$TARGET_PATH/images/movies/{$IMAGES}.jpg"
+		if [[ $variable == *,* ]]; then
+			eval rm "$TARGET_PATH/images/movies/{$IMAGES}.jpg"
+		else
+			eval rm -rf "$TARGET_PATH/images/movies/$IMAGES.jpg"
+		fi
 	fi
 }
