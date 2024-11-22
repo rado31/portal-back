@@ -70,20 +70,24 @@ pub async fn create(mut req: Request<State>) -> Result<Response> {
         }
     }
 
-    if let Err(error) = copy_folder(
-        Path::new(&format!("{upload_path}/musics")),
-        Path::new(&format!("{folder}/musics")),
-    ) {
-        log::error!("Copy music: {error}");
-        return Ok(Response::new(500));
+    for id in json_file.musics {
+        if let Err(error) = fs::copy(
+            format!("{upload_path}/musics/{id}.mp3"),
+            format!("{folder}/musics/{id}.mp3"),
+        ) {
+            log::error!("Copy music: {error}");
+            return Ok(Response::new(500));
+        }
     }
 
-    if let Err(error) = copy_folder(
-        Path::new(&format!("{upload_path}/books")),
-        Path::new(&format!("{folder}/books")),
-    ) {
-        log::error!("Copy book: {error}");
-        return Ok(Response::new(500));
+    for id in json_file.books {
+        if let Err(error) = fs::copy(
+            format!("{upload_path}/books/{id}.pdf"),
+            format!("{folder}/books/{id}.pdf"),
+        ) {
+            log::error!("Copy book: {error}");
+            return Ok(Response::new(500));
+        }
     }
 
     // 5. create 'delete_files.json' and save it in 'changes' folder

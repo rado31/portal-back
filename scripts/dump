@@ -7,7 +7,7 @@ dump() {
 	fi
 
 	echo "Restoring database $DB_NAME from $SQL_DUMP_FILE..."
-	if ! psql -d "$DB_NAME" -f "$SQL_DUMP_FILE"; then
+	if ! psql -U postgres -d "$DB_NAME" -f "$SQL_DUMP_FILE" > /dev/null 2>&1; then
 		error_exit "Failed to restore database $DB_NAME from $SQL_DUMP_FILE"
 	fi
 

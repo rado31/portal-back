@@ -4,6 +4,6 @@ delete_files() {
 	BOOKS=$(jq -r '.books | join(",")' "$JSON_FILE")
 
 	eval rm -rf "$TARGET_PATH/movies/{$MOVIES}"
-	eval rm "$TARGET_PATH/musics/{$MUSICS}.mp3"
-	eval rm "$TARGET_PATH/books/{$BOOKS}.pdf"
+	eval rm "$TARGET_PATH/musics/{$MUSICS}*"
+	eval rm "$TARGET_PATH/books/{$BOOKS}*"
 }
