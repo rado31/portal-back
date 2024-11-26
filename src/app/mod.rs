@@ -12,15 +12,17 @@ pub fn init_app(state: State) -> tide::Server<()> {
 
     app.with(middlewares::cors());
 
-    app.at("/auth").nest(controllers::auth(state.clone()));
-    app.at("/categories")
+    app.at("/api/auth").nest(controllers::auth(state.clone()));
+    app.at("/api/categories")
         .nest(controllers::category(state.clone()));
 
-    app.at("/movies").nest(controllers::movie(state.clone()));
-    app.at("/musics").nest(controllers::music(state.clone()));
-    app.at("/books").nest(controllers::book(state.clone()));
-    app.at("/dump").nest(controllers::dump(state.clone()));
-    app.at("/uploads").serve_dir("uploads").unwrap();
+    app.at("/api/movies")
+        .nest(controllers::movie(state.clone()));
+    app.at("/api/musics")
+        .nest(controllers::music(state.clone()));
+    app.at("/api/books").nest(controllers::book(state.clone()));
+    app.at("/api/dump").nest(controllers::dump(state.clone()));
+    app.at("/api/uploads").serve_dir("uploads").unwrap();
 
     app
 }
