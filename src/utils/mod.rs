@@ -101,11 +101,14 @@ pub fn count_total_frames(path: &str) -> i32 {
         .output()
         .unwrap();
 
-    String::from_utf8(res.stdout)
-        .unwrap()
-        .trim()
-        .parse()
-        .unwrap()
+    let result = String::from_utf8(res.stdout).unwrap();
+    let result = result.trim();
+
+    if result.ends_with(",") {
+        return result.replace(",", "").parse().unwrap();
+    }
+
+    result.parse().unwrap()
 }
 
 pub fn check_media_password(
